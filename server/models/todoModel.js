@@ -8,11 +8,7 @@ const todoSchema = mongoose.Schema({
     unique: true,
     maxLength: [15, "Title should not exceeds more than 20 characters"],
   },
-  tasks: [
-    {
-      type: String
-    },
-  ],
+  tasks: [],
 });
 
 module.exports = mongoose.model("TodoSchema", todoSchema);

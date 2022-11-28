@@ -1,0 +1,42 @@
+// try {
+//   const { todoId } = req.params;
+//   const { tasks } = req.body;
+//   const checkTodoExists = await TodoSchema.findById(todoId);
+//   if (!checkTodoExists) throw new Error("Todo doesn't exists");
+
+//   const todo = await TodoSchema.findById(todoId);
+//   todo.tasks = [...todo.tasks, ...tasks];
+//   const updatedTodo = await TodoSchema.findById(todoId);
+//   res.status(200).json({
+//     success: true,
+//     message: "Task added successfully",
+//     updatedTodo,
+//   });
+// }
+
+
+
+const { todoId } = req.params;
+  const { tasks } = req.body;
+  if (!todoId) {
+    res.status(400).json({
+      success: false,
+      message: "Todo ID not exists",
+    });
+  }
+
+  const todo = await TodoSchema.findById(todoId);
+  try {
+    tasks.forEach((task) => {
+      todo.tasks.push(task);
+      // console.log("I am here");
+    });
+
+    todo.save();
+    // console.log(todo);
+    res.status(201).json({
+      success: true,
+      message: "Task added successfully",
+      todo,
+    });
+  }
