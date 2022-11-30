@@ -8,13 +8,10 @@ const mongodbConnect = require("./config/todoDB");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+mongodbConnect();
 // Routes
 app.use("/", todoRoute);
 app.use("/", taskRoute);
 
-mongodbConnect();
-app.get("/", (req, res) => {
-  res.status(200).json({ success: true, message: "All good" });
-});
 
 module.exports = app;

@@ -9,11 +9,11 @@ const {
   deleteTodo,
 } = require("../controllers/todoController");
 
-router.get("/", home);
-router.post("/create_todo", createTodo);
-router.get("/get_todos", getTodos);
-router.get("/get_todo/:todoId", getTodo);
-router.put("/edit_todo/:todoId", editTodo);
-router.delete("/delete_todo/:todoId", deleteTodo);
+router.route("/").get(home);
+router.route("/create_todo").post(createTodo);
+router.route("/get_todos").get(getTodos);
+router.route("/get_todo/:todoId").get(getTodo);
+router.route("/edit_todo/:todoId").put(editTodo);
+router.route("/delete_todo/:todoId").delete(deleteTodo);
 
 module.exports = router;
