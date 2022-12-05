@@ -70,42 +70,5 @@ exports.deleteTask = async (req, res) => {
 // edit task
 
 exports.editTask = async (req, res) => {
-  try {
-    const { todoId } = req.params;
-    const { tasks } = req.body;
-    console.log(tasks);
-    if (!todoId) {
-      res.status(400).json({
-        success: false,
-        message: "Todo ID not present",
-      });
-    }
-    if (!tasks) {
-      res.status(400).json({
-        success: false,
-        message: "Please send correct data",
-      });
-    }
 
-    const todo = await TodoSchema.findOne({ _id: todoId });
-    if (tasks.length > 0) {
-      for (let i in tasks) {
-        if (tasks[i].task != todo.tasks[i].task) {
-          todo.tasks[i].task = tasks[i].task;
-        }
-      }
-    }
-    await todo.save();
-    console.log(todo);
-    res.status(200).json({
-      success: true,
-      message: "Task updated successfully",
-      todo,
-    });
-  } catch (error) {
-    res.status(402).json({
-      success: false,
-      message: error.message,
-    });
-  }
 };
