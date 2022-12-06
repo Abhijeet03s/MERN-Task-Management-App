@@ -3,7 +3,7 @@ import React from "react";
 export default function Navbar() {
   return (
     <>
-      <header className="text-[#eeeeee] shadow-sm shadow-[#f4f4f4]">
+      <header className="text-[#eeeeee] shadow-sm shadow-[#acb6bf]">
         <div className="container mx-auto flex justify-between items-center p-5 flex-col lg:flex-row">
           <a className="flex title-font font-medium items-center mb-4 md:mb-0">
             <h1 className="ml-3 text-2xl">Todo App</h1>

@@ -1,13 +1,42 @@
-import React from "react";
+import axios from "axios";
+import React, { useContext, useState, useEffect } from "react";
 import { FiPlus } from "react-icons/fi";
 import TodoList from "./TodoList";
 
+const API_BASE = "http://localhost:3000";
+
 export default function AddTodo() {
+  const [todo, setTodo] = useState("");
+
+  // Create Todo
+  const createTodo = async () => {
+    if (todo.length === 0) {
+      alert("todo cannot be empty");
+    }
+    const data = { title: todo };
+    console.log(data);
+    try {
+      await axios.post(`${API_BASE}/create_todo`, data);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  // Submit Todo
+  const handleSubmitForm = (e) => {
+    e.preventDefault();
+    createTodo();
+    setTodo("");
+  };
+
   return (
     <>
       <section className="container mx-auto flex items-center justify-center mt-20">
-        <div className="w-fit py-10 px-10 sm:px-20 rounded-md border-[1px] border-[#A6B2BC]">
-          <div className="flex flex-col justify-center space-y-3">
+        <div className="w-fit py-10 px-10 sm:px-20 rounded-md border-[1px] border-[#acb6bf]">
+          <form
+            onSubmit={handleSubmitForm}
+            className="flex flex-col justify-center space-y-3"
+          >
             <label
               className="text-[20px] sm:text-[2rem] text-white font-bold"
               htmlFor="title"
@@ -20,12 +49,14 @@ export default function AddTodo() {
                 name="title"
                 id="title"
                 type="text"
+                value={todo}
+                onChange={(e) => setTodo(e.target.value)}
               />
-              <button className="p-3 rounded-[50%] bg-[#FD77A1] duration-200 ease-in-out">
+              <button className="p-3 rounded-[50%] bg-[#eb7ea1] duration-200 ease-in-out">
                 <FiPlus />
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </section>
       <TodoList />

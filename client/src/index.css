@@ -13,7 +13,7 @@ body {
 .input:focus,
 input:hover {
   outline: none;
-  border-color: rgba(11, 9, 10, 0.4);
+  border-color: #0b090a66;
   background-color: #fff;
   box-shadow: 0 0 0 4px rgb(234 76 137 / 10%);
 }
