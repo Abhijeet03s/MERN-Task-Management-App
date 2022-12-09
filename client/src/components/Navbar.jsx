@@ -1,12 +1,18 @@
-import React from "react";
+import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
+  const { loggedInUser, handleLogOut } = useContext(AuthContext);
+
   return (
     <>
       <header className="text-[#eeeeee] shadow-sm shadow-[#acb6bf]">
         <div className="container mx-auto flex justify-between items-center p-5 flex-col lg:flex-row">
           <a className="flex title-font font-medium items-center mb-4 md:mb-0">
-            <h1 className="ml-3 text-2xl">Todo App</h1>
+            <Link to="/">
+              <h1 className="ml-3 text-2xl">Todo App</h1>
+            </Link>
           </a>
           <div className="max-w-full flex items-center relative">
             <svg
@@ -26,7 +32,22 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <h3>Abhijeet</h3>
-            <button>Login</button>
+            {loggedInUser ? (
+              <Link to="/">
+                <button
+                  onClick={handleLogOut}
+                  className="block text-white rounded-sm py-1 px-3"
+                >
+                  Logout
+                </button>
+              </Link>
+            ) : (
+              <Link to="/login">
+                <button className="block text-white rounded-sm py-1 px-3">
+                  Login
+                </button>
+              </Link>
+            )}
           </div>
         </div>
       </header>

@@ -6,7 +6,6 @@ exports.home = (req, res) => {
   res.send("Welcome to my Todo App");
 };
 
-
 // create todo
 
 exports.createTodo = async (req, res) => {
@@ -18,9 +17,7 @@ exports.createTodo = async (req, res) => {
         message: "Title is required, Enter title to create a todo",
       });
     }
-    const todoData = new TodoSchema({
-      title,
-    });
+    const todoData = await TodoSchema.create({ title });
     const todo = await todoData.save();
     res.status(200).json({
       success: true,
@@ -33,7 +30,6 @@ exports.createTodo = async (req, res) => {
     });
   }
 };
-
 
 // get todos
 
@@ -52,7 +48,6 @@ exports.getTodos = async (req, res) => {
     });
   }
 };
-
 
 // get todo
 
@@ -80,7 +75,6 @@ exports.getTodo = async (req, res) => {
   }
 };
 
-
 // edit todo
 
 exports.editTodo = async (req, res) => {
@@ -103,7 +97,6 @@ exports.editTodo = async (req, res) => {
     });
   }
 };
-
 
 // delete todo
 
