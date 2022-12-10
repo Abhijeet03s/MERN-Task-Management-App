@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { FiPlus } from "react-icons/fi";
 import TodoList from "./TodoList";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
 export default function AddTodo() {
   const [todo, setTodo] = useState("");

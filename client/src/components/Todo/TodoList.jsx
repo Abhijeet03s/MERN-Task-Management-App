@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { AiFillDelete } from "react-icons/ai";
 import { FiEdit } from "react-icons/fi";
 
-const API_BASE = "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
 export default function TodoList() {
   const [todos, setTodos] = useState([]);
