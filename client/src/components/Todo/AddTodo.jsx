@@ -1,32 +1,88 @@
-import axios from "axios";
 import React, { useContext, useState, useEffect } from "react";
-import { FiPlus } from "react-icons/fi";
+import axios from "axios";
 import TodoList from "./TodoList";
+import { FiPlus } from "react-icons/fi";
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
 export default function AddTodo() {
+  const [todos, setTodos] = useState([]);
   const [todo, setTodo] = useState("");
 
-  // Create Todo
-  const createTodo = async () => {
+  const fetchData = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/get_todos`);
+      setTodos(res.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const createTodo = async (e) => {
+    e.preventDefault();
     if (todo.length === 0) {
       alert("todo cannot be empty");
     }
-    const data = { title: todo };
-    console.log(data);
-    try {
-      await axios.post(`${API_BASE}/create_todo`, data);
-    } catch (err) {
-      console.log(err.message);
-    }
+    await axios.post(`${API_BASE}/create_todo`, {
+      ...todos,
+      title: todo,
+    });
+    fetchData();
+    setTodo("");
   };
+  console.log(todos, "todos");
 
   // Submit Todo
-  const handleSubmitForm = (e) => {
-    e.preventDefault();
-    createTodo();
-    setTodo("");
+  // const handleSubmitForm = (e) => {
+  //   e.preventDefault();
+
+  //   // Create Todo
+  //   const createTodo = async () => {
+  //     if (todo.length === 0) {
+  //       alert("todo cannot be empty");
+  //     }
+  //     const data = { title: todo };
+  //     try {
+  //       await axios.post(`${API_BASE}/create_todo`, data);
+  //       setTodos(data);
+  //     } catch (err) {
+  //       console.log(err.message);
+  //     }
+  //   };
+  //   createTodo();
+  //   getTodos();
+  //   setTodo("");
+  // };
+
+  // get Todos
+  // const getTodos = async () => {
+  //   try {
+  //     const res = await axios.get(`${API_BASE}/get_todos`);
+  //     const data = res.data.todo;
+  //     setTodos(data);
+  //   } catch (err) {
+  //     console.log(err.message);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   getTodos();
+  // }, []);
+
+  // edit Todo
+  const editTodoHandler = async (todoId) => {};
+
+  // delete Todo
+  const deleteTodoHandler = async (todoId) => {
+    try {
+      await axios.delete(`${API_BASE}/delete_todo/${todoId}`);
+      setTodos(todos.filter((todo) => todo._id !== todoId));
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -34,7 +90,7 @@ export default function AddTodo() {
       <section className="container mx-auto flex items-center justify-center mt-20">
         <div className="w-fit py-10 px-10 sm:px-20 rounded-md border-[1px] border-[#acb6bf]">
           <form
-            onSubmit={handleSubmitForm}
+            onSubmit={createTodo}
             className="flex flex-col justify-center space-y-3"
           >
             <label
@@ -59,7 +115,32 @@ export default function AddTodo() {
           </form>
         </div>
       </section>
-      <TodoList />
+      <section className="container mx-auto flex items-center justify-center mt-20">
+        <div className="w-fit py-10 px-10 mb-10 sm:px-20 rounded-md border-[1px] border-[#acb6bf]">
+          <div className="flex flex-col justify-center space-y-3">
+            <h1 className="text-2xl text-white font-bold">Todo List:</h1>
+            {todos?.map((todo) => (
+              <div key={todo._id} className="flex items-center space-x-2">
+                <h1 className="w-[230px] sm:w-[400px] text-white  rounded-[4px]">
+                  {todo.title}
+                </h1>
+                <button
+                  onClick={() => editTodoHandler(todo._id)}
+                  className="p-2 rounded-[50%] bg-[#eb7ea1] duration-200 ease-in-out"
+                >
+                  <FiEdit />
+                </button>
+                <button
+                  onClick={() => deleteTodoHandler(todo._id)}
+                  className="p-2 rounded-[50%] bg-[#eb7ea1] duration-200 ease-in-out"
+                >
+                  <AiFillDelete />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </>
   );
 }

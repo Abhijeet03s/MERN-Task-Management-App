@@ -9,11 +9,12 @@ export default function Navbar() {
     <>
       <header className="text-[#eeeeee] shadow-sm shadow-[#acb6bf]">
         <div className="container mx-auto flex justify-between items-center p-5 flex-col lg:flex-row">
-          <a className="flex title-font font-medium items-center mb-4 md:mb-0">
-            <Link to="/">
-              <h1 className="ml-3 text-2xl">Todo App</h1>
-            </Link>
-          </a>
+          <Link
+            to="/"
+            className="flex title-font font-medium items-center mb-4 md:mb-0"
+          >
+            <h1 className="ml-3 text-2xl">Todo App</h1>
+          </Link>
           <div className="max-w-full flex items-center relative">
             <svg
               className="absolute left-4 w-4 h-4"

@@ -34,7 +34,7 @@ export default function Signup() {
 
   return (
     <>
-      <section className="container flex flex-col max-w-full min-h-screen mt-8">
+      <section className="container flex flex-col max-w-full min-h-screen mt-8 font-medium">
         <div className="w-full lg:mx-auto p-4 relative">
           <div className="shadow-2xl max-w-full lg:max-w-[30%] mx-auto rounded-md p-5 lg:p-14 z-100 bg-white">
             <h2 className="text-2xl lg:text-3xl text-center font-bold text-gray-600">
@@ -73,17 +73,17 @@ export default function Signup() {
                 }
               />
             </div>
-            <p className="text-red-400">{errorMessage}</p>
+            <p className="text-blue-500">{errorMessage}</p>
             <button
               onClick={handleSubmitForm}
-              className="w-full bg-blue-500 active:bg-blue-600 py-2 rounded-md text-gray-50"
+              className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50"
             >
               Sign Up
             </button>
             <div className="max-w-xl mx-auto">
               <p className="text-sm mt-8">
                 Already have an account?{" "}
-                <Link to="/login" className="text-blue-500">
+                <Link to="/login" className="text-blue-600">
                   Login
                 </Link>
               </p>

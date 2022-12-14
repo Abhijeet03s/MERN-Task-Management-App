@@ -41,7 +41,7 @@ export default function Login() {
 
   return (
     <>
-      <section className="container flex flex-col max-w-full lg:min-h-[90vh] mt-8 font-Inter font-medium">
+      <section className="container flex flex-col max-w-full lg:min-h-[90vh] mt-8 font-medium">
         <div className="w-full lg:mx-auto p-4 relative z-100">
           <div className="shadow-2xl max-w-full lg:max-w-[30%] mx-auto rounded-md p-5 lg:p-14 z-100 bg-white">
             <h2 className="text-2xl lg:text-3xl text-center font-bold mb-8 text-gray-600">
@@ -72,8 +72,8 @@ export default function Login() {
                   }
                 />
               </div>
-              <p className="text-red-400">{errorMessage}</p>
-              <button className="w-full bg-blue-500 active:bg-blue-600 py-2 rounded-md text-gray-50">
+              <p className="text-blue-500">{errorMessage}</p>
+              <button className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50">
                 Login
               </button>
               <div className="max-w-xl mx-auto">

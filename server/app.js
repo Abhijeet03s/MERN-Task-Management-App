@@ -1,4 +1,4 @@
-const cors = require('cors')
+const cors = require("cors");
 const express = require("express");
 const mongodbConnect = require("./config/todoDB");
 const app = express();
@@ -7,7 +7,12 @@ const taskRoute = require("./routes/taskRoute");
 const search = require("./routes/searchRoute");
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.CLIENT_URL,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
