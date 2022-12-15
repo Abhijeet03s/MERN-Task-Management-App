@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import AddTodo from "./components/Todo/AddTodo";
-import TaskList from "./components/Todo/TodoList";
+import TaskList from "./components/Task/TaskList";
 import Signup from "./components/UserAuth/Signup";
 import Login from "./components/UserAuth/Login";
 import { AuthContextProvider } from "./context/AuthContext";

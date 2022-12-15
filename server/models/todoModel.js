@@ -7,7 +7,7 @@ const todoSchema = mongoose.Schema(
       required: [true, "Title is required"],
       trim: true,
       unique: true,
-      maxLength: [15, "Title should not exceeds more than 20 characters"],
+      maxLength: [100, "Title should not exceeds more than 20 characters"],
     },
     tasks: [],
   },
