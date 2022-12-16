@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/", todoRoute);
 app.use("/", taskRoute);
-app.use("/", search);
+app.use("/search", search);
 
 // DatabaseConnections
 mongodbConnect();

@@ -1,5 +1,27 @@
 const TodoSchema = require("../models/todoModel");
 
+// get all task 
+exports.getTasks = async (req, res) => {
+  try {
+    const { todoId } = req.params;
+    const checkTodoExists = await TodoSchema.findById(todoId);
+    if (!checkTodoExists) throw new Error("no such todo exists");
+
+    const todo = await TodoSchema.findById(todoId);
+    const tasks = todo.tasks;
+    res.status(200).json({
+      success: true,
+      message: "tasks successfully retrieved",
+      tasks,
+    });
+  } catch (err) {
+    res.status(401).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 // create task
 
 exports.createTask = async (req, res) => {
@@ -69,6 +91,4 @@ exports.deleteTask = async (req, res) => {
 
 // edit task
 
-exports.editTask = async (req, res) => {
-
-};
+exports.editTask = async (req, res) => {};

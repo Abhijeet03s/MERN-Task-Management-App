@@ -34,12 +34,11 @@ export default function TodoList({ todos, setTodos, getTodos }) {
             <h1 className="text-2xl text-white font-bold">Todo List:</h1>
             {todos &&
               todos.map((todo) => (
-                <div
-                  onClick={() => navigate(`/${todo._id}`)}
-                  key={todo._id}
-                  className="flex items-center space-x-2"
-                >
-                  <h1 className="w-[230px] sm:w-[400px] text-white  rounded-[4px]">
+                <div key={todo._id} className="flex items-center space-x-2">
+                  <h1
+                    onClick={() => navigate(`/${todo._id}`)}
+                    className="w-[230px] sm:w-[400px] text-white  rounded-[4px]"
+                  >
                     {todo.title}
                   </h1>
                   <button
