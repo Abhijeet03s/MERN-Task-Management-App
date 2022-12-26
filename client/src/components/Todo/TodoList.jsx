@@ -5,7 +5,7 @@ import { FiEdit } from "react-icons/fi";
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
-export default function TodoList({ todos, setTodos, getTodos }) {
+export default function TodoList({ todos, setTodos }) {
   const navigate = useNavigate();
   // edit Todo
   const editTodoHandler = async () => {

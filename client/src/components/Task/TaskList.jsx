@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { FiPlus } from "react-icons/fi";
+import { AiFillDelete } from "react-icons/ai";
+import { FiEdit } from "react-icons/fi";
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL;
 
@@ -9,40 +11,58 @@ export default function AddTodo() {
   const { todoId } = useParams();
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
-  const [editTask, setEditTask] = useState("");
+  // const [editTask, setEditTask] = useState("");
+
+  // get all tasks
 
   const getTasks = async (todoId) => {
     const res = await axios.get(`${API_BASE}/get_tasks/${todoId}`, {
       tasks,
     });
-    console.log(res.data.tasks);
+    console.log(res);
+    // console.log(res.data.tasks);
     setTasks(res.data.tasks);
   };
 
   useEffect(() => {
-    getTasks();
+    getTasks(todoId);
   }, []);
 
   // creating task
-  const createTask = async (todoId, e) => {
-    e.preventDefault();
+
+  const createTask = async (todoId) => {
     if (task.length === 0) {
-      alert("todo cannot be empty");
+      alert("Task cannot be empty");
     }
-    if (!editTask) {
-      try {
-        await axios.post(`${API_BASE}/create_task/${todoId}`, {
-          ...tasks,
-          tasks: task,
-        });
-        setTasks(res.data.task);
-        getTasks();
-        setTask("");
-      } catch (error) {
-        console.log(error.message);
-      }
-    } else {
-      updateTodo(editTask.todoId, task);
+    try {
+      const data = await axios.post(`${API_BASE}/create_task/${todoId}`, {
+        ...tasks,
+        tasks: task,
+      });
+      // console.log(data);
+      setTasks(data);
+      getTasks(todoId);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  // submitting form
+  const submitTaskHandler = (e) => {
+    e.preventDefault();
+    createTask(todoId);
+    setTask("");
+  };
+
+  // delete Task
+  
+  const deleteTaskHandler = async (todoId) => {
+    try {
+      const res = await axios.delete(`${API_BASE}/delete_task/${todoId}`);
+      console.log(res.data.tasks);
+      setTodos(res.data.tasks.shift());
+    } catch (err) {
+      console.log(err.message);
     }
   };
 
@@ -51,7 +71,7 @@ export default function AddTodo() {
       <section className="container mx-auto flex items-center justify-center mt-20">
         <div className="w-fit py-10 px-10 sm:px-20 rounded-md border-[1px] border-[#acb6bf]">
           <form
-            onSubmit={createTask}
+            onSubmit={submitTaskHandler}
             className="flex flex-col justify-center space-y-3"
           >
             <label
@@ -81,9 +101,9 @@ export default function AddTodo() {
           <div className="flex flex-col justify-center space-y-3">
             <h1 className="text-2xl text-white font-bold">Task List:</h1>
             {tasks &&
-              tasks.map((task) => (
-                <div key={task._id} className="flex items-center space-x-2">
-                  <h1 className="w-[230px] sm:w-[400px] text-white  rounded-[4px]">
+              tasks.map((task, i) => (
+                <div key={i} className="flex items-center space-x-2">
+                  <h1 className="w-[230px] sm:w-[400px] text-white rounded-[4px]">
                     {task.task}
                   </h1>
                   <button
@@ -93,7 +113,7 @@ export default function AddTodo() {
                     <FiEdit />
                   </button>
                   <button
-                    // onClick={() => deleteTodoHandler(task._id)}
+                    onClick={() => deleteTaskHandler(todoId)}
                     className="p-2 rounded-[50%] bg-[#eb7ea1] duration-200 ease-in-out"
                   >
                     <AiFillDelete />
@@ -106,3 +126,5 @@ export default function AddTodo() {
     </>
   );
 }
+
+// let todoId = window.location.pathname.slice(1);
