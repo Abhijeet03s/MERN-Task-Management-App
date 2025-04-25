@@ -16,7 +16,7 @@ export default function App() {
             <Route path="/" element={<AddTodo />}></Route>
             <Route path="/:todoId" element={<TaskList />}></Route>
             <Route path="/signup" element={<Signup />}></Route>
-            <Route path="/login" element={<Login />}></Route>           
+            <Route path="/login" element={<Login />}></Route>
           </Routes>
         </div>
       </AuthContextProvider>
