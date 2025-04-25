@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const todoRoute = require("./routes/todoRoute");
 const taskRoute = require("./routes/taskRoute");
-const search = require("./routes/searchRoute");
+const searchRoute = require("./routes/searchRoute");
 
 // Middleware
 app.use(
@@ -18,11 +18,16 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use("/", todoRoute);
 app.use("/", taskRoute);
-app.use("/search", search);
+app.use("/search", searchRoute);
 
 // Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
 });
 
 module.exports = app;

@@ -3,42 +3,26 @@ const supabase = require('../config/supabaseConfig');
 exports.searchTask = async (req, res) => {
   try {
     const { query } = req.body;
+    const userId = req.user.id;
 
-    // Search in todos
-    const { data: todoResults, error: todoError } = await supabase
+    // Search todos
+    const { data: todos } = await supabase
       .from('todos')
-      .select('*')
-      .eq('user_id', req.user?.id)
-      .ilike('title', `%${query}%`);
+      .select()
+      .ilike('title', `%${query}%`)
+      .eq('user_id', userId);
 
-    if (todoError) throw todoError;
-
-    // Search in tasks
-    const { data: taskResults, error: taskError } = await supabase
+    // Search tasks
+    const { data: tasks } = await supabase
       .from('tasks')
-      .select('*')
-      .eq('user_id', req.user?.id)
-      .or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+      .select()
+      .ilike('title', `%${query}%`)
+      .eq('user_id', userId);
 
-    if (taskError) throw taskError;
-
-    // Combine results
-    const searchResults = {
-      todos: todoResults || [],
-      tasks: taskResults || []
-    };
-
-    res.status(200).json({
-      success: true,
-      message: "Search results found.",
-      searchResults
-    });
+    res.status(200).json({ todos, tasks });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    console.error('Search error:', error);
+    res.status(500).json({ message: 'Search failed', error: error.message });
   }
 };
 

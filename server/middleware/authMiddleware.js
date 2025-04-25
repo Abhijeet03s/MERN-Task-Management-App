@@ -1,21 +1,18 @@
-// Simplified auth middleware for Supabase transition
+const supabase = require('../config/supabaseConfig');
 
 const verifyToken = async (req, res, next) => {
    try {
-      // For development, we'll use a simplified authentication
-      // This allows requests to proceed while we implement Supabase
-
-      // Extract token if it exists
       const token = req.headers.authorization?.split('Bearer ')[1];
+      if (!token) throw new Error('No token provided');
 
-      // Set a default user ID for testing
-      req.user = { id: token || '00000000-0000-0000-0000-000000000000' };
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error) throw error;
 
-      // Proceed to the next middleware
+      req.user = { id: user.id };
       next();
    } catch (error) {
-      console.error('Auth middleware error:', error);
-      return res.status(401).json({ message: 'Unauthorized' });
+      console.error('Auth error:', error);
+      res.status(401).json({ message: 'Unauthorized' });
    }
 };
 

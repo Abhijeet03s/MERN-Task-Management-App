@@ -6,9 +6,12 @@ const getTasks = async (req, res) => {
       const { todoId } = req.params;
       const { data, error } = await supabase
          .from('tasks')
-         .select('*')
+         .select(`
+            *,
+            todos!tasks_todo_id_fkey(*)
+         `)
          .eq('todo_id', todoId)
-         .eq('user_id', req.user?.id);
+         .eq('user_id', req.user.id);
 
       if (error) throw error;
       res.status(200).json(data);
@@ -22,7 +25,7 @@ const getTasks = async (req, res) => {
 const createTask = async (req, res) => {
    try {
       const { todoId } = req.params;
-      const { title, description, status } = req.body;
+      const { title, description, status = 'pending' } = req.body;
 
       const { data, error } = await supabase
          .from('tasks')
@@ -49,14 +52,13 @@ const createTask = async (req, res) => {
 const editTask = async (req, res) => {
    try {
       const { todoId } = req.params;
-      const { taskId } = req.body;
-      const updateData = { ...req.body };
+      const { taskId, title, description, status } = req.body;
 
-      // Remove fields that shouldn't be updated
-      delete updateData.taskId;
-      delete updateData.id;
-      delete updateData.user_id;
-      delete updateData.todo_id;
+      // Only include fields that should be updated
+      const updateData = {};
+      if (title !== undefined) updateData.title = title;
+      if (description !== undefined) updateData.description = description;
+      if (status !== undefined) updateData.status = status;
 
       const { data, error } = await supabase
          .from('tasks')

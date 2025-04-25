@@ -1,13 +1,10 @@
 const supabase = require('../config/supabaseConfig');
 
-// home route
-
 exports.home = (req, res) => {
   res.send("Welcome to my Todo App");
 };
 
 // create todo
-
 exports.createTodo = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -27,14 +24,15 @@ exports.createTodo = async (req, res) => {
   }
 };
 
-// get todos
+// get all todos
 
-exports.getAllTodos = async (req, res) => {
+exports.getTodos = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('todos')
       .select('*')
-      .eq('user_id', req.user?.id);
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     res.status(200).json(data);
@@ -43,6 +41,7 @@ exports.getAllTodos = async (req, res) => {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
+
 
 // get todo
 
@@ -123,7 +122,7 @@ exports.deleteTodo = async (req, res) => {
 
     if (error) throw error;
 
-    // Fix the null check:
+    // if todo not available in the list
     if (!data || data.length === 0) {
       return res.status(400).json({
         success: false,
@@ -142,22 +141,4 @@ exports.deleteTodo = async (req, res) => {
   }
 };
 
-// Example function - update your existing function
-exports.getTodos = async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('todos')
-      .select('*')
-      .eq('user_id', req.user.id);
 
-    if (error) throw error;
-
-    res.status(200).json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Server Error',
-      error: error.message
-    });
-  }
-};

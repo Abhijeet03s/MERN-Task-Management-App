@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
-  status TEXT DEFAULT 'pending',
+  status TEXT DEFAULT 'pending' NOT NULL,
   todo_id INTEGER NOT NULL REFERENCES todos(id) ON DELETE CASCADE,
   user_id TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

@@ -1,8 +1,5 @@
 const supabase = require('../config/supabaseConfig');
 
-// Supabase doesn't use schemas the way MongoDB does
-// This file now provides utility functions for working with todos in Supabase
-
 /**
  * Creates a new todo
  * @param {Object} todoData - The todo data
