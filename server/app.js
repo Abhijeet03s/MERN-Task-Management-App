@@ -8,7 +8,8 @@ const searchRoute = require("./routes/searchRoute");
 // Middleware
 app.use(
   cors({
-    credentials: true,
+    origin: ['https://task-manager.abhijeetsh.com', 'https://task-manager-abhijeetsh.pages.dev'],
+    credentials: true
   })
 );
 
