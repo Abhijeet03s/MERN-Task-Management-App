@@ -1,95 +1,114 @@
-const TodoSchema = require("../models/todoModel");
+const supabase = require('../config/supabaseConfig');
 
-// get all task 
+// Get all tasks for a specific todo
+const getTasks = async (req, res) => {
+   try {
+      const { todoId } = req.params;
+      const { data, error } = await supabase
+         .from('tasks')
+         .select('*')
+         .eq('todo_id', todoId)
+         .eq('user_id', req.user?.id);
 
-exports.getTasks = async (req, res) => {
-  try {
-    const { todoId } = req.params;
-    const checkTodoExists = await TodoSchema.findById(todoId);
-    if (!checkTodoExists) throw new Error("no such todo exists");
-
-    const todo = await TodoSchema.findById(todoId);
-    const tasks = todo.tasks;
-    res.status(200).json({
-      success: true,
-      message: "tasks successfully retrieved",
-      tasks,
-    });
-  } catch (err) {
-    res.status(401).json({
-      success: false,
-      message: err.message,
-    });
-  }
+      if (error) throw error;
+      res.status(200).json(data);
+   } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server Error', error: error.message });
+   }
 };
 
-// create task
+// Create a new task
+const createTask = async (req, res) => {
+   try {
+      const { todoId } = req.params;
+      const { title, description, status } = req.body;
 
-exports.createTask = async (req, res) => {
-  try {
-    const { todoId } = req.params;
-    const { tasks } = req.body;
-    console.log(tasks);
-    const todo = await TodoSchema.findById(todoId);
-    if (!todo) throw new Error("Todo doesn't exists");
+      const { data, error } = await supabase
+         .from('tasks')
+         .insert([
+            {
+               title,
+               description,
+               status: status || 'pending',
+               todo_id: todoId,
+               user_id: req.user?.id
+            }
+         ])
+         .select();
 
-    tasks.forEach((task) => {
-      todo.tasks.push(task);
-    });
-    await todo.save();
-    console.log(todo);
-
-    res.status(200).json({
-      success: true,
-      message: "Task added successfully",
-      todo,
-    });
-  } catch (error) {
-    res.status(402).json({
-      success: false,
-      message: error.message,
-    });
-  }
+      if (error) throw error;
+      res.status(201).json(data[0]);
+   } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server Error', error: error.message });
+   }
 };
 
-// delete task
+// Edit a task
+const editTask = async (req, res) => {
+   try {
+      const { todoId } = req.params;
+      const { taskId } = req.body;
+      const updateData = { ...req.body };
 
-exports.deleteTask = async (req, res) => {
-  const { todoId } = req.params;
-  const { tasks } = req.body;
-  console.log("Task is retreived", tasks);
+      // Remove fields that shouldn't be updated
+      delete updateData.taskId;
+      delete updateData.id;
+      delete updateData.user_id;
+      delete updateData.todo_id;
 
-  if (!todoId) {
-    return res.status(400).json({
-      success: false,
-      message: "TodoId not doesn't exists",
-    });
-  }
+      const { data, error } = await supabase
+         .from('tasks')
+         .update(updateData)
+         .eq('id', taskId)
+         .eq('todo_id', todoId)
+         .eq('user_id', req.user?.id)
+         .select();
 
-  try {
-    if (!tasks) {
-      return res.status(400).json({
-        success: false,
-        message: "Something went wrong",
-      });
-    }
-    const todo = await TodoSchema.findOne({ _id: todoId });
-    todo.tasks.pull(tasks);
-    await todo.save();
-    console.log(todo);
-    res.status(200).json({
-      success: true,
-      message: "Task deleted successfully",
-      todo,
-    });
-  } catch (error) {
-    res.status(402).json({
-      success: false,
-      message: error.message,
-    });
-  }
+      if (error) throw error;
+
+      if (data.length === 0) {
+         return res.status(404).json({ message: "Task not found" });
+      }
+
+      res.status(200).json(data[0]);
+   } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server Error', error: error.message });
+   }
 };
 
-// edit task
+// Delete a task
+const deleteTask = async (req, res) => {
+   try {
+      const { todoId } = req.params;
+      const { taskId } = req.body;
 
-exports.editTask = async (req, res) => {};
+      const { data, error } = await supabase
+         .from('tasks')
+         .delete()
+         .eq('id', taskId)
+         .eq('todo_id', todoId)
+         .eq('user_id', req.user?.id)
+         .select();
+
+      if (error) throw error;
+
+      if (data.length === 0) {
+         return res.status(404).json({ message: "Task not found" });
+      }
+
+      res.status(200).json({ message: "Task deleted successfully" });
+   } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server Error', error: error.message });
+   }
+};
+
+module.exports = {
+   getTasks,
+   createTask,
+   editTask,
+   deleteTask
+};

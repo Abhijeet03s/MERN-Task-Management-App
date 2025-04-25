@@ -1,17 +1,55 @@
-const mongoose = require("mongoose");
+const supabase = require('../config/supabaseConfig');
 
-const todoSchema = mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: [true, "Title is required"],
-      trim: true,
-      unique: true,
-      maxLength: [100, "Title should not exceeds more than 20 characters"],
-    },
-    tasks: [],
-  },
-  { timestamps: true }
-);
+// Supabase doesn't use schemas the way MongoDB does
+// This file now provides utility functions for working with todos in Supabase
 
-module.exports = mongoose.model("TodoSchema", todoSchema);
+/**
+ * Creates a new todo
+ * @param {Object} todoData - The todo data
+ * @param {string} userId - The user ID
+ * @returns {Promise} - The Supabase query result
+ */
+exports.createTodo = async (todoData, userId) => {
+  return await supabase
+    .from('todos')
+    .insert([{ ...todoData, user_id: userId }])
+    .select();
+};
+
+/**
+ * Retrieves todos for a user
+ * @param {string} userId - The user ID
+ * @returns {Promise} - The Supabase query result
+ */
+exports.getTodos = async (userId) => {
+  return await supabase
+    .from('todos')
+    .select('*')
+    .eq('user_id', userId);
+};
+
+// Export other necessary functions for working with todos
+module.exports.getTodo = async (todoId, userId) => {
+  return await supabase
+    .from('todos')
+    .select('*')
+    .eq('id', todoId)
+    .eq('user_id', userId);
+};
+
+module.exports.updateTodo = async (todoId, todoData, userId) => {
+  return await supabase
+    .from('todos')
+    .update(todoData)
+    .eq('id', todoId)
+    .eq('user_id', userId)
+    .select();
+};
+
+module.exports.deleteTodo = async (todoId, userId) => {
+  return await supabase
+    .from('todos')
+    .delete()
+    .eq('id', todoId)
+    .eq('user_id', userId);
+};

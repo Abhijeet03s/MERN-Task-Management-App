@@ -1,4 +1,4 @@
-const TodoSchema = require("../models/todoModel");
+const supabase = require('../config/supabaseConfig');
 
 // home route
 
@@ -10,42 +10,37 @@ exports.home = (req, res) => {
 
 exports.createTodo = async (req, res) => {
   try {
-    const { title } = req.body;
-    if (!title) {
-      res.json({
-        success: true,
-        message: "Title is required, Enter title to create a todo",
-      });
-    }
-    const todoData = await TodoSchema.create({ title });
-    const todo = await todoData.save();
-    res.status(200).json({
-      success: true,
-      todo,
-    });
+    const { title, description } = req.body;
+
+    const { data, error } = await supabase
+      .from('todos')
+      .insert([
+        { title, description, user_id: req.user?.id }
+      ])
+      .select();
+
+    if (error) throw error;
+    res.status(201).json(data[0]);
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: error.message,
-    });
+    console.error(error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
 // get todos
 
-exports.getTodos = async (req, res) => {
+exports.getAllTodos = async (req, res) => {
   try {
-    const todo = await TodoSchema.find();
-    res.status(200).json({
-      success: true,
-      message: "Todos is retrieved successfully",
-      todo,
-    });
+    const { data, error } = await supabase
+      .from('todos')
+      .select('*')
+      .eq('user_id', req.user?.id);
+
+    if (error) throw error;
+    res.status(200).json(data);
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: error.message,
-    });
+    console.error(error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
@@ -54,13 +49,15 @@ exports.getTodos = async (req, res) => {
 exports.getTodo = async (req, res) => {
   try {
     const { todoId } = req.params;
-    const todo = await TodoSchema.findById(todoId);
-    if (todoId) {
-      res.status(200).json({
-        success: true,
-        message: "Todo retrieved successfully",
-        todo,
-      });
+    const { data, error } = await supabase
+      .from('todos')
+      .select('*')
+      .eq('id', todoId)
+      .eq('user_id', req.user?.id);
+
+    if (error) throw error;
+    if (data.length > 0) {
+      res.status(200).json(data[0]);
     } else {
       res.status(400).json({
         success: false,
@@ -68,33 +65,47 @@ exports.getTodo = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: "error.message",
-    });
+    console.error(error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
 // edit todo
 
 exports.editTodo = async (req, res) => {
-  const { todoId } = req.params;
-  const { title } = req.body;
-  const todo = await TodoSchema.findByIdAndUpdate(todoId, { title });
   try {
-    if (!todo) {
+    const { todoId } = req.params;
+
+    // Add validation
+    if (!todoId) {
       throw new Error("Todo ID is required to fetch the todo");
     }
+
+    const { title } = req.body;
+    const { data, error } = await supabase
+      .from('todos')
+      .update({ title })
+      .eq('id', todoId)
+      .eq('user_id', req.user?.id)
+      .select();
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Todo not found",
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Todo updated successfully",
-      todo,
+      todo: data[0],
     });
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: error.message,
-    });
+    console.error(error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
   }
 };
 
@@ -102,24 +113,51 @@ exports.editTodo = async (req, res) => {
 
 exports.deleteTodo = async (req, res) => {
   const { todoId } = req.params;
-  const todo = await TodoSchema.findByIdAndDelete(todoId);
   try {
-    if (todo) {
-      res.json({
-        success: true,
-        message: "Todo deleted successfully",
-        todo,
-      });
-    } else {
-      res.status(400).json({
+    const { data, error } = await supabase
+      .from('todos')
+      .delete()
+      .eq('id', todoId)
+      .eq('user_id', req.user?.id)
+      .select();
+
+    if (error) throw error;
+
+    // Fix the null check:
+    if (!data || data.length === 0) {
+      return res.status(400).json({
         success: false,
         message: "Todo not available in the list",
       });
     }
+
+    res.json({
+      success: true,
+      message: "Todo deleted successfully",
+      todo: data[0],
+    });
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: error.message,
+    console.error(error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+};
+
+// Example function - update your existing function
+exports.getTodos = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('todos')
+      .select('*')
+      .eq('user_id', req.user.id);
+
+    if (error) throw error;
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Server Error',
+      error: error.message
     });
   }
 };

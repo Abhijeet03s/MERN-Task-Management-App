@@ -1,6 +1,5 @@
 const cors = require("cors");
 const express = require("express");
-const mongodbConnect = require("./config/todoDB");
 const app = express();
 const todoRoute = require("./routes/todoRoute");
 const taskRoute = require("./routes/taskRoute");
@@ -21,7 +20,9 @@ app.use("/", todoRoute);
 app.use("/", taskRoute);
 app.use("/search", search);
 
-// DatabaseConnections
-mongodbConnect();
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 
 module.exports = app;

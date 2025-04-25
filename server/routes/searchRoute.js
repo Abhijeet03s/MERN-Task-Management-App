@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { searchTask } = require("../controllers/searchController");
+const { verifyToken } = require('../middleware/authMiddleware');
 
-router.get("/search_task", searchTask);
+router.use(verifyToken);
 
-module.exports = router
+router.post("/", searchTask);
+
+module.exports = router;
