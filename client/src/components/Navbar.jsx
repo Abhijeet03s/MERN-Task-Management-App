@@ -1,9 +1,24 @@
 import { Link } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+import { searchApi } from "../services/api";
+import { useState } from "react";
 
 export default function Navbar() {
-  const { loggedInUser, handleLogOut } = useContext(AuthContext);
+  const { user, handleLogOut } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    try {
+      const response = await searchApi.search(searchQuery);
+      console.log('Search results:', response.data);
+      // You can implement a search results display here
+    } catch (error) {
+      console.error('Search error:', error);
+    }
+  };
 
   return (
     <>
@@ -15,7 +30,7 @@ export default function Navbar() {
           >
             <h1 className="ml-3 text-2xl">Todo App</h1>
           </Link>
-          <div className="max-w-full flex items-center relative">
+          <form onSubmit={handleSearch} className="max-w-full flex items-center relative">
             <svg
               className="absolute left-4 w-4 h-4"
               aria-hidden="true"
@@ -28,26 +43,35 @@ export default function Navbar() {
             <input
               placeholder="Search"
               type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-[35px] pl-10 border-2 border-solid border-transparent rounded-[4px] outline-none bg-[#f3f3f4] text-[#0d0c22] transition duration-300 transition-ease"
             />
-          </div>
+          </form>
           <div className="flex items-center gap-4">
-            <h3>Abhijeet</h3>
-            {loggedInUser ? (
-              <Link to="/">
+            {user ? (
+              <>
+                <h3>{user.email}</h3>
                 <button
                   onClick={handleLogOut}
-                  className="block text-white rounded-sm py-1 px-3"
+                  className="block text-white bg-[#eb7ea1] hover:bg-[#d86e91] rounded-sm py-1 px-3"
                 >
                   Logout
                 </button>
-              </Link>
+              </>
             ) : (
-              <Link to="/login">
-                <button className="block text-white rounded-sm py-1 px-3">
-                  Login
-                </button>
-              </Link>
+              <div className="flex gap-2">
+                <Link to="/login">
+                  <button className="block text-white bg-[#eb7ea1] hover:bg-[#d86e91] rounded-sm py-1 px-3">
+                    Login
+                  </button>
+                </Link>
+                <Link to="/signup">
+                  <button className="block text-white bg-[#eb7ea1] hover:bg-[#d86e91] rounded-sm py-1 px-3">
+                    Sign Up
+                  </button>
+                </Link>
+              </div>
             )}
           </div>
         </div>

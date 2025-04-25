@@ -1,43 +1,49 @@
 import { useState, useEffect } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../firebase/firebase";
-import { useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import { signInWithEmail } from "../../services/supabase";
 
 export default function Login() {
-  const { loggedInUser } = useContext(AuthContext);
-
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [userData, setUserData] = useState({
     email: "",
-    pass: "",
+    password: "",
   });
 
-  const handleSubmitForm = (e) => {
+  const handleSubmitForm = async (e) => {
     e.preventDefault();
-    if (!userData.email || !userData.pass) {
+    if (!userData.email || !userData.password) {
       setErrorMessage("Fill all the fields");
       return;
     }
-    setErrorMessage("");
-    // console.log(userData);
-    signInWithEmailAndPassword(auth, userData.email, userData.pass)
-      .then((res) => {
-        console.log(res);
-        navigate("/");
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
+
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      const { error } = await signInWithEmail(userData.email, userData.password);
+
+      if (error) {
+        throw error;
+      }
+
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error.message);
+      setErrorMessage(error.message || "Failed to sign in");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (loggedInUser != null) {
+    if (isAuthenticated) {
       navigate("/");
     }
-  }, [loggedInUser]);
+  }, [isAuthenticated, navigate]);
 
   return (
     <>
@@ -58,6 +64,7 @@ export default function Login() {
                   onChange={(e) =>
                     setUserData((prev) => ({ ...prev, email: e.target.value }))
                   }
+                  disabled={loading}
                 />
               </div>
               <div className="mb-8">
@@ -66,15 +73,19 @@ export default function Login() {
                   className="border w-full rounded-md border-gray-300 p-2"
                   type="password"
                   name="password"
-                  value={userData.pass}
+                  value={userData.password}
                   onChange={(e) =>
-                    setUserData((prev) => ({ ...prev, pass: e.target.value }))
+                    setUserData((prev) => ({ ...prev, password: e.target.value }))
                   }
+                  disabled={loading}
                 />
               </div>
-              <p className="text-blue-500">{errorMessage}</p>
-              <button className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50">
-                Login
+              {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+              <button
+                className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50 disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Login"}
               </button>
               <div className="max-w-xl mx-auto">
                 <p className="text-sm mt-8">

@@ -1,65 +1,85 @@
 import React, { useContext, useState, useEffect } from "react";
-import axios from "axios";
 import TodoList from "./TodoList";
 import { FiPlus } from "react-icons/fi";
-
-const API_BASE = import.meta.env.VITE_BACKEND_URL;
+import { todoApi } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AddTodo() {
   const [todos, setTodos] = useState([]);
   const [todo, setTodo] = useState("");
-  const [editTodo, setEditTodo] = useState("");
+  const [editTodo, setEditTodo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { user } = useAuth();
 
-  // getting todos
-
-   const getTodos = async () => {
+  // Getting todos
+  const getTodos = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/get_todos`);
-      // console.log(res);
-      setTodos(res.data.todo);
+      setLoading(true);
+      setError('');
+      const response = await todoApi.getAllTodos();
+      setTodos(response.data);
     } catch (error) {
-      console.log(error.message);
+      console.error('Error fetching todos:', error);
+      setError('Failed to load todos. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
+
   useEffect(() => {
-    getTodos();
-  }, []);
+    if (user) {
+      getTodos();
+    }
+  }, [user]);
 
-  // creating todo
-
+  // Creating todo
   const createTodo = async (e) => {
     e.preventDefault();
-    if (todo.length === 0) {
-      alert("todo cannot be empty");
+    if (todo.trim().length === 0) {
+      setError('Todo cannot be empty');
+      return;
     }
-    if (!editTodo) {
-      try {
-        await axios.post(`${API_BASE}/create_todo`, {
-          ...todos,
+
+    setLoading(true);
+    setError('');
+
+    try {
+      if (!editTodo) {
+        // Create new todo
+        const response = await todoApi.createTodo({
           title: todo,
+          description: ''
         });
+        console.log('Todo created:', response.data);
         getTodos();
-        setTodo("");
-      } catch (error) {
-        console.log(error.message);
+      } else {
+        // Update existing todo
+        await todoApi.updateTodo(editTodo.id, { title: todo });
+        getTodos();
+        setEditTodo(null);
       }
-    } else {
-      updateTodo(editTodo.todoId, todo);
+      setTodo("");
+    } catch (error) {
+      console.error('Error with todo:', error);
+      setError(error.response?.data?.message || 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updateTodo = (todoId, title) => {
-    const newTodoTitle = todos.map((todo) =>
-      todo.id === todoId ? { todoId, title } : todo
-    );
-    setTodos(newTodoTitle);
-    setEditTask("");
+  // Set up edit mode
+  const handleEditMode = (todoItem) => {
+    setEditTodo(todoItem);
+    setTodo(todoItem.title);
   };
 
   return (
     <>
       <section className="container mx-auto flex items-center justify-center mt-20">
         <div className="w-fit py-10 px-10 sm:px-20 rounded-md border-[1px] border-[#acb6bf]">
+          {error && <p className="text-red-500 mb-4">{error}</p>}
+
           <form
             onSubmit={createTodo}
             className="flex flex-col justify-center space-y-3"
@@ -68,7 +88,7 @@ export default function AddTodo() {
               className="text-[20px] sm:text-[2rem] text-white font-bold"
               htmlFor="title"
             >
-              Todo:
+              {editTodo ? 'Edit Todo:' : 'New Todo:'}
             </label>
             <div className="space-x-2">
               <input
@@ -78,15 +98,26 @@ export default function AddTodo() {
                 type="text"
                 value={todo}
                 onChange={(e) => setTodo(e.target.value)}
+                disabled={loading}
               />
-              <button className="p-3 rounded-[50%] bg-[#eb7ea1] duration-200 ease-in-out">
+              <button
+                className="p-3 rounded-[50%] bg-[#eb7ea1] duration-200 ease-in-out disabled:opacity-50"
+                disabled={loading}
+              >
                 <FiPlus />
               </button>
             </div>
           </form>
         </div>
       </section>
-      <TodoList todos={todos} setTodos={setTodos} getTodos={getTodos} />
+
+      <TodoList
+        todos={todos}
+        loading={loading}
+        onEdit={handleEditMode}
+        onDelete={getTodos}
+        refreshTodos={getTodos}
+      />
     </>
   );
 }

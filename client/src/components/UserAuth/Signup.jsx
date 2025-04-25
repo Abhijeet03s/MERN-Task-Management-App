@@ -1,36 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
+import { signUpWithEmail } from "../../services/supabase";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [userData, setUserData] = useState({
     name: "",
     email: "",
-    pass: "",
+    password: "",
   });
 
-  const handleSubmitForm = () => {
-    if (!userData.name || !userData.email || !userData.pass) {
+  const handleSubmitForm = async (e) => {
+    e.preventDefault();
+
+    if (!userData.name || !userData.email || !userData.password) {
       setErrorMessage("Fill all the fields");
       return;
     }
-    setErrorMessage("");
-    console.log(userData);
-    createUserWithEmailAndPassword(auth, userData.email, userData.pass)
-      .then(async (res) => {
-        const user = res.user;
-        await updateProfile(user, {
-          displayName: userData.name,
-        });
-        navigate("/login");
-      })
-      .catch((error) => {
-        console.log(error.message);
-      });
+
+    try {
+      setLoading(true);
+      setErrorMessage("");
+
+      // Sign up with email
+      const { error } = await signUpWithEmail(userData.email, userData.password);
+
+      if (error) {
+        throw error;
+      }
+
+      // If successful, redirect to login
+      navigate("/login");
+    } catch (error) {
+      console.error("Signup error:", error.message);
+      setErrorMessage(error.message || "Failed to sign up");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
 
   return (
     <>
@@ -40,54 +57,63 @@ export default function Signup() {
             <h2 className="text-2xl lg:text-3xl text-center font-bold text-gray-600">
               Sign Up
             </h2>
-            <div className="mb-8">
-              <p className="text-md text-gray-500 mb-2">Full Name</p>
-              <input
-                className="border w-full rounded-md border-gray-300 p-2"
-                type="text"
-                name="name"
-                onChange={(e) =>
-                  setUserData((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-            </div>
-            <div className="mb-8">
-              <p className="text-md text-gray-500 mb-2">Email</p>
-              <input
-                className="border w-full rounded-md border-gray-300 p-2"
-                type="email"
-                name="email"
-                onChange={(e) =>
-                  setUserData((prev) => ({ ...prev, email: e.target.value }))
-                }
-              />
-            </div>
-            <div className="mb-8">
-              <p className="text-md text-gray-500 mb-2">Password</p>
-              <input
-                className="border w-full rounded-md border-gray-300 p-2"
-                type="password"
-                name="password"
-                onChange={(e) =>
-                  setUserData((prev) => ({ ...prev, pass: e.target.value }))
-                }
-              />
-            </div>
-            <p className="text-blue-500">{errorMessage}</p>
-            <button
-              onClick={handleSubmitForm}
-              className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50"
-            >
-              Sign Up
-            </button>
-            <div className="max-w-xl mx-auto">
-              <p className="text-sm mt-8">
-                Already have an account?{" "}
-                <Link to="/login" className="text-blue-600">
-                  Login
-                </Link>
-              </p>
-            </div>
+            <form onSubmit={handleSubmitForm}>
+              <div className="mb-8">
+                <p className="text-md text-gray-500 mb-2">Full Name</p>
+                <input
+                  className="border w-full rounded-md border-gray-300 p-2"
+                  type="text"
+                  name="name"
+                  value={userData.name}
+                  onChange={(e) =>
+                    setUserData((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  disabled={loading}
+                />
+              </div>
+              <div className="mb-8">
+                <p className="text-md text-gray-500 mb-2">Email</p>
+                <input
+                  className="border w-full rounded-md border-gray-300 p-2"
+                  type="email"
+                  name="email"
+                  value={userData.email}
+                  onChange={(e) =>
+                    setUserData((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  disabled={loading}
+                />
+              </div>
+              <div className="mb-8">
+                <p className="text-md text-gray-500 mb-2">Password</p>
+                <input
+                  className="border w-full rounded-md border-gray-300 p-2"
+                  type="password"
+                  name="password"
+                  value={userData.password}
+                  onChange={(e) =>
+                    setUserData((prev) => ({ ...prev, password: e.target.value }))
+                  }
+                  disabled={loading}
+                />
+              </div>
+              {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+              <button
+                type="submit"
+                className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50 disabled:opacity-50"
+                disabled={loading}
+              >
+                {loading ? "Signing up..." : "Sign Up"}
+              </button>
+              <div className="max-w-xl mx-auto">
+                <p className="text-sm mt-8">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-blue-600">
+                    Login
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
       </section>
