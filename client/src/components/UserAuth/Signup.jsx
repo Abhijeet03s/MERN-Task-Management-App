@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signUpWithEmail } from "../../services/supabase";
 import { useAuth } from "../../context/AuthContext";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { toast } from "sonner";
+import { User, Mail, Lock } from "lucide-react";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -18,26 +23,29 @@ export default function Signup() {
     e.preventDefault();
 
     if (!userData.name || !userData.email || !userData.password) {
-      setErrorMessage("Fill all the fields");
+      toast.error("Please fill all the fields");
       return;
     }
 
     try {
       setLoading(true);
-      setErrorMessage("");
 
-      // Sign up with email
-      const { error } = await signUpWithEmail(userData.email, userData.password);
+      const toastId = toast.loading("Creating your account...");
+
+      const { error, data } = await signUpWithEmail(
+        userData.email,
+        userData.password,
+        { full_name: userData.name }
+      );
 
       if (error) {
         throw error;
       }
 
-      // If successful, redirect to login
+      toast.success("Account created successfully! Please log in.", { id: toastId });
       navigate("/login");
     } catch (error) {
-      console.error("Signup error:", error.message);
-      setErrorMessage(error.message || "Failed to sign up");
+      toast.error(error.message || "Failed to sign up");
     } finally {
       setLoading(false);
     }
@@ -50,19 +58,26 @@ export default function Signup() {
   }, [isAuthenticated, navigate]);
 
   return (
-    <>
-      <section className="container flex flex-col max-w-full min-h-screen mt-8 font-medium">
-        <div className="w-full lg:mx-auto p-4 relative">
-          <div className="shadow-2xl max-w-full lg:max-w-[30%] mx-auto rounded-md p-5 lg:p-14 z-100 bg-white">
-            <h2 className="text-2xl lg:text-3xl text-center font-bold text-gray-600">
-              Sign Up
-            </h2>
-            <form onSubmit={handleSubmitForm}>
-              <div className="mb-8">
-                <p className="text-md text-gray-500 mb-2">Full Name</p>
-                <input
-                  className="border w-full rounded-md border-gray-300 p-2"
+    <div className="container mx-auto flex items-center justify-center min-h-[85vh] px-4">
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center gradient-text">Create an Account</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-accent-red/10 border-l-4 border-accent-red rounded-r-lg text-light-100">
+              {errorMessage}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmitForm} className="space-y-6">
+            <div className="space-y-2">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  className="pl-10"
                   type="text"
+                  placeholder="Full Name"
                   name="name"
                   value={userData.name}
                   onChange={(e) =>
@@ -71,11 +86,15 @@ export default function Signup() {
                   disabled={loading}
                 />
               </div>
-              <div className="mb-8">
-                <p className="text-md text-gray-500 mb-2">Email</p>
-                <input
-                  className="border w-full rounded-md border-gray-300 p-2"
+            </div>
+
+            <div className="space-y-2">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  className="pl-10"
                   type="email"
+                  placeholder="Email Address"
                   name="email"
                   value={userData.email}
                   onChange={(e) =>
@@ -84,11 +103,15 @@ export default function Signup() {
                   disabled={loading}
                 />
               </div>
-              <div className="mb-8">
-                <p className="text-md text-gray-500 mb-2">Password</p>
-                <input
-                  className="border w-full rounded-md border-gray-300 p-2"
+            </div>
+
+            <div className="space-y-2">
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  className="pl-10"
                   type="password"
+                  placeholder="Password"
                   name="password"
                   value={userData.password}
                   onChange={(e) =>
@@ -97,26 +120,26 @@ export default function Signup() {
                   disabled={loading}
                 />
               </div>
-              {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
-              <button
-                type="submit"
-                className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50 disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? "Signing up..." : "Sign Up"}
-              </button>
-              <div className="max-w-xl mx-auto">
-                <p className="text-sm mt-8">
-                  Already have an account?{" "}
-                  <Link to="/login" className="text-blue-600">
-                    Login
-                  </Link>
-                </p>
-              </div>
-            </form>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Sign Up"}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <div className="text-sm text-light-400">
+            Already have an account?{" "}
+            <Link to="/login" className="text-primary-400 hover:underline">
+              Log in
+            </Link>
           </div>
-        </div>
-      </section>
-    </>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

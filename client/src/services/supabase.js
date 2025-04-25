@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client with environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
@@ -10,13 +9,20 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Authentication helpers
 export const signInWithEmail = async (email, password) => {
    return await supabase.auth.signInWithPassword({ email, password });
 };
 
-export const signUpWithEmail = async (email, password) => {
-   return await supabase.auth.signUp({ email, password });
+export const signUpWithEmail = async (email, password, metadata = {}) => {
+   return await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+         data: {
+            ...metadata
+         }
+      }
+   });
 };
 
 export const signOut = async () => {
@@ -29,9 +35,14 @@ export const getCurrentUser = async () => {
    return data?.user;
 };
 
-// Returns the current session
 export const getSession = async () => {
    const { data, error } = await supabase.auth.getSession();
    if (error) throw error;
    return data.session;
+};
+
+export const updateUserMetadata = async (metadata) => {
+   return await supabase.auth.updateUser({
+      data: metadata
+   });
 }; 

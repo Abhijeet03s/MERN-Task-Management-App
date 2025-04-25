@@ -9,7 +9,8 @@ const api = axios.create({
    }
 });
 
-// Add authentication interceptor
+// This interceptor automatically adds the authentication token to all API requests
+
 api.interceptors.request.use(
    (config) => {
       const token = localStorage.getItem('authToken');
@@ -21,7 +22,6 @@ api.interceptors.request.use(
    (error) => Promise.reject(error)
 );
 
-// Todo API calls
 export const todoApi = {
    getAllTodos: () => api.get('/get_todos'),
    getTodo: (todoId) => api.get(`/get_todo/${todoId}`),
@@ -30,7 +30,6 @@ export const todoApi = {
    deleteTodo: (todoId) => api.delete(`/delete_todo/${todoId}`)
 };
 
-// Task API calls
 export const taskApi = {
    getTasks: (todoId) => api.get(`/get_tasks/${todoId}`),
    createTask: (todoId, taskData) => api.post(`/create_task/${todoId}`, taskData),
@@ -38,7 +37,6 @@ export const taskApi = {
    deleteTask: (todoId, taskId) => api.delete(`/delete_task/${todoId}`, { data: { taskId } })
 };
 
-// Search API calls
 export const searchApi = {
    search: (query) => api.post('/search', { query })
 };

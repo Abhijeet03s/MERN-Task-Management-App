@@ -1,19 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #191921;
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-dark-300 text-light-100 font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-primary-500/30 text-light-100;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-lg font-medium transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-300 disabled:opacity-60 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-100 text-white hover:bg-dark-300 focus:ring-dark-100;
+  }
+
+  .btn-danger {
+    @apply bg-accent-red/90 text-white hover:bg-accent-red focus:ring-accent-red/50;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent border border-light-500/10 text-light-100 hover:bg-dark-100 focus:ring-light-500/10;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 bg-dark-100 border border-dark-300/80 rounded-lg text-light-100 placeholder:text-gray-500 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-200 ease-in-out;
+  }
+
+  .card {
+    @apply bg-dark-200 rounded-xl shadow-card border border-dark-100/30;
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-glow hover:border-primary-500/30;
+  }
+
+  .heading {
+    @apply font-semibold tracking-tight;
+  }
+
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-accent-blue;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-300;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary-600/50;
 }
 
 .input::placeholder {
-  color: #9e9ea7;
+  @apply text-gray-500;
 }
 
 .input:focus,
-input:hover {
-  outline: none;
-  border-color: #0b090a66;
-  background-color: #fff;
-  box-shadow: 0 0 0 4px rgb(234 76 137 / 10%);
+.input:hover {
+  @apply outline-none border-primary-500 bg-dark-100;
 }

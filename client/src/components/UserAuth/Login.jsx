@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { signInWithEmail } from "../../services/supabase";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../ui/card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { toast } from "sonner";
+import { Mail, Lock } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,7 +21,7 @@ export default function Login() {
   const handleSubmitForm = async (e) => {
     e.preventDefault();
     if (!userData.email || !userData.password) {
-      setErrorMessage("Fill all the fields");
+      toast.error("Please fill all the fields");
       return;
     }
 
@@ -24,16 +29,18 @@ export default function Login() {
       setLoading(true);
       setErrorMessage("");
 
+      const toastId = toast.loading("Logging in...");
+
       const { error } = await signInWithEmail(userData.email, userData.password);
 
       if (error) {
         throw error;
       }
 
+      toast.success("Logged in successfully", { id: toastId });
       navigate("/");
     } catch (error) {
-      console.error("Login error:", error.message);
-      setErrorMessage(error.message || "Failed to sign in");
+      toast.error(error.message || "Failed to sign in");
     } finally {
       setLoading(false);
     }
@@ -46,19 +53,26 @@ export default function Login() {
   }, [isAuthenticated, navigate]);
 
   return (
-    <>
-      <section className="container flex flex-col max-w-full lg:min-h-[90vh] mt-8 font-medium">
-        <div className="w-full lg:mx-auto p-4 relative z-100">
-          <div className="shadow-2xl max-w-full lg:max-w-[30%] mx-auto rounded-md p-5 lg:p-14 z-100 bg-white">
-            <h2 className="text-2xl lg:text-3xl text-center font-bold mb-8 text-gray-600">
-              Sign In
-            </h2>
-            <form onSubmit={handleSubmitForm}>
-              <div className="mb-8">
-                <p className="text-md text-gray-500 mb-2">Email</p>
-                <input
-                  className="border w-full rounded-md border-gray-300 p-2"
+    <div className="container mx-auto flex items-center justify-center min-h-[85vh] px-4">
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center gradient-text">Welcome Back</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-accent-red/10 border-l-4 border-accent-red rounded-r-lg text-light-100">
+              {errorMessage}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmitForm} className="space-y-6">
+            <div className="space-y-2">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  className="pl-10"
                   type="email"
+                  placeholder="Email Address"
                   name="email"
                   value={userData.email}
                   onChange={(e) =>
@@ -67,11 +81,15 @@ export default function Login() {
                   disabled={loading}
                 />
               </div>
-              <div className="mb-8">
-                <p className="text-md text-gray-500 mb-2">Password</p>
-                <input
-                  className="border w-full rounded-md border-gray-300 p-2"
+            </div>
+
+            <div className="space-y-2">
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  className="pl-10"
                   type="password"
+                  placeholder="Password"
                   name="password"
                   value={userData.password}
                   onChange={(e) =>
@@ -80,25 +98,26 @@ export default function Login() {
                   disabled={loading}
                 />
               </div>
-              {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
-              <button
-                className="w-full bg-[#eb7ea1] active:bg-[#ff74a0] py-2 rounded-md text-gray-50 disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? "Signing in..." : "Login"}
-              </button>
-              <div className="max-w-xl mx-auto">
-                <p className="text-sm mt-8">
-                  Don't have an account?{" "}
-                  <Link to="/signup" className="text-blue-600">
-                    Register
-                  </Link>
-                </p>
-              </div>
-            </form>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <div className="text-sm text-light-400">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-primary-400 hover:underline">
+              Sign up
+            </Link>
           </div>
-        </div>
-      </section>
-    </>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
