@@ -16,15 +16,13 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use("/", todoRoute);
-app.use("/", taskRoute);
-app.use("/search", searchRoute);
-
-// Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
+
+app.use("/api", todoRoute);
+app.use("/api", taskRoute);
+app.use("/api/search", searchRoute);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

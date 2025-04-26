@@ -23,22 +23,22 @@ api.interceptors.request.use(
 );
 
 export const todoApi = {
-   getAllTodos: () => api.get('/get_todos'),
-   getTodo: (todoId) => api.get(`/get_todo/${todoId}`),
-   createTodo: (todoData) => api.post('/create_todo', todoData),
-   updateTodo: (todoId, todoData) => api.put(`/edit_todo/${todoId}`, todoData),
-   deleteTodo: (todoId) => api.delete(`/delete_todo/${todoId}`)
+   getAllTodos: () => api.get('/api/get_todos'),
+   getTodo: (todoId) => api.get(`/api/get_todo/${todoId}`),
+   createTodo: (todoData) => api.post('/api/create_todo', todoData),
+   updateTodo: (todoId, todoData) => api.put(`/api/edit_todo/${todoId}`, todoData),
+   deleteTodo: (todoId) => api.delete(`/api/delete_todo/${todoId}`)
 };
 
 export const taskApi = {
-   getTasks: (todoId) => api.get(`/get_tasks/${todoId}`),
-   createTask: (todoId, taskData) => api.post(`/create_task/${todoId}`, taskData),
-   updateTask: (todoId, taskData) => api.put(`/edit_task/${todoId}`, taskData),
-   deleteTask: (todoId, taskId) => api.delete(`/delete_task/${todoId}`, { data: { taskId } })
+   getTasks: (todoId) => api.get(`/api/get_tasks/${todoId}`),
+   createTask: (todoId, taskData) => api.post(`/api/create_task/${todoId}`, taskData),
+   updateTask: (todoId, taskData) => api.put(`/api/edit_task/${todoId}`, taskData),
+   deleteTask: (todoId, taskId) => api.delete(`/api/delete_task/${todoId}`, { data: { taskId } })
 };
 
 export const searchApi = {
-   search: (query) => api.post('/search', { query })
+   search: (query) => api.post('/api/search', { query })
 };
 
 export default api;
