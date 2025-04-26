@@ -333,10 +333,6 @@ export default function TaskList() {
     setLocalTasks(tasks);
   }, [tasks]);
 
-  // Use localTasks for displaying if it differs from filteredTasks (after deletion)
-  const displayTasks = localTasks.length !== filteredTasks.length && !searchQuery
-    ? localTasks
-    : filteredTasks;
 
   return (
     <div className="container mx-auto px-4 max-w-3xl py-6 md:py-10">
@@ -348,13 +344,12 @@ export default function TaskList() {
               <span>Back</span>
             </Button>
           </Link>
-          <h1 className="text-xl md:text-2xl font-bold gradient-text">{todoTitle}</h1>
         </div>
       </div>
 
       <Card className="mb-6 overflow-hidden">
         <CardHeader className="pb-0 pt-4 md:pt-6">
-          <CardTitle>Create New Task</CardTitle>
+          <CardTitle className="text-lg md:text-xl">Create New Task</CardTitle>
         </CardHeader>
         <CardContent className="pt-4 md:pt-6">
           {error && (
@@ -383,12 +378,12 @@ export default function TaskList() {
                 {loading ? (
                   <div className="flex items-center gap-1.5">
                     <span className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-light-100 border-t-transparent rounded-full animate-spin" />
-                    <span>{editTaskId ? 'Updating...' : 'Creating...'}</span>
+                    <span className="text-sm sm:text-base">{editTaskId ? 'Updating...' : 'Creating...'}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>{editTaskId ? 'Update' : 'Add'}</span>
+                    <span className="text-sm sm:text-base">{editTaskId ? 'Update' : 'Add'}</span>
                   </div>
                 )}
               </Button>
@@ -399,7 +394,7 @@ export default function TaskList() {
 
       <div className="flex flex-col sm:flex-row items-center justify-between mb-3 gap-3">
         <h2 className="text-base sm:text-xl font-semibold gradient-text truncate w-full sm:w-auto text-center sm:text-left">
-          {searchResults ? `Search: "${searchResults.query}"` : 'Your Tasks'}
+          {searchResults ? `Search: "${searchResults.query}"` : `${todoTitle.charAt(0).toUpperCase() + todoTitle.slice(1)} Tasks`}
         </h2>
 
         <div className="relative w-full sm:max-w-[240px]">
@@ -433,7 +428,7 @@ export default function TaskList() {
         <CardHeader className="flex flex-row items-center justify-between py-4">
           <div className="flex items-center gap-2">
             <ListChecks className="w-5 h-5 text-primary-400" />
-            <CardTitle>
+            <CardTitle className="text-lg md:text-xl">
               {searchQuery ? 'Search Results' : 'Task List'}
             </CardTitle>
           </div>

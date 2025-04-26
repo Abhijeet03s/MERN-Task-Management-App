@@ -232,7 +232,7 @@ export default function AddTodo() {
     <div className="container mx-auto px-4 max-w-3xl py-6 md:py-10">
       <Card hover className="mb-6 overflow-hidden">
         <CardHeader className="pb-0 pt-4 md:pt-6">
-          <CardTitle className={`${editTodo ? 'text-primary-400' : 'gradient-text'}`}>
+          <CardTitle className={`${editTodo ? 'text-primary-400' : 'gradient-text'} text-lg md:text-xl`} >
             {editTodo ? 'Edit Todo' : 'Create New Todo'}
           </CardTitle>
         </CardHeader>
@@ -263,12 +263,12 @@ export default function AddTodo() {
                 {loading ? (
                   <div className="flex items-center gap-1.5">
                     <span className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-light-100 border-t-transparent rounded-full animate-spin" />
-                    <span>{editTodo ? 'Updating...' : 'Creating...'}</span>
+                    <span className="text-sm sm:text-base">{editTodo ? 'Updating...' : 'Creating...'}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>{editTodo ? 'Update' : 'Add'}</span>
+                    <span className="text-sm">{editTodo ? 'Update' : 'Add'}</span>
                   </div>
                 )}
               </Button>
@@ -278,7 +278,7 @@ export default function AddTodo() {
       </Card>
 
       <div className="flex flex-col sm:flex-row items-center justify-between mb-3 gap-3">
-        <h2 className="text-base sm:text-xl font-semibold gradient-text truncate w-full sm:w-auto text-center sm:text-left">
+        <h2 className="text-lg md:text-xl font-semibold gradient-text truncate w-full sm:w-auto text-center sm:text-left">
           {searchResults ? `Search: "${searchResults.query}"` : 'Your Todos'}
         </h2>
 

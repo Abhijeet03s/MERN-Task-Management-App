@@ -75,7 +75,7 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="flex items-center gap-2">
             <ListChecks className="w-5 h-5 text-primary-400" />
-            <CardTitle>
+            <CardTitle className="text-lg md:text-xl">
               {searchQuery && !searchResults ? 'Filtered Todos' : (searchResults ? 'Todo Results' : 'Todo List')}
             </CardTitle>
           </div>

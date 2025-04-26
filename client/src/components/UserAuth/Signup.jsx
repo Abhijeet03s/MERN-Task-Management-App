@@ -58,24 +58,24 @@ export default function Signup() {
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="container mx-auto flex items-center justify-center min-h-[85vh] px-4">
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center gradient-text">Create an Account</CardTitle>
+    <div className="container mx-auto flex items-center justify-center min-h-[85vh] px-4 py-6 sm:py-8">
+      <Card className="w-full max-w-md mx-auto shadow-lg">
+        <CardHeader className="space-y-1 px-4 sm:px-6 pt-5 sm:pt-6">
+          <CardTitle className="text-xl sm:text-2xl font-bold text-center gradient-text">Create an Account</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pt-4 sm:pt-6">
           {errorMessage && (
-            <div className="mb-4 p-3 bg-accent-red/10 border-l-4 border-accent-red rounded-r-lg text-light-100">
+            <div className="mb-4 p-2.5 sm:p-3 bg-accent-red/10 border-l-4 border-accent-red rounded-r-lg text-light-100 text-sm sm:text-base">
               {errorMessage}
             </div>
           )}
 
-          <form onSubmit={handleSubmitForm} className="space-y-6">
+          <form onSubmit={handleSubmitForm} className="space-y-4 sm:space-y-6">
             <div className="space-y-2">
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <Input
-                  className="pl-10"
+                  className="pl-10 h-9 sm:h-10 text-sm sm:text-base"
                   type="text"
                   placeholder="Full Name"
                   name="name"
@@ -92,7 +92,7 @@ export default function Signup() {
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <Input
-                  className="pl-10"
+                  className="pl-10 h-9 sm:h-10 text-sm sm:text-base"
                   type="email"
                   placeholder="Email Address"
                   name="email"
@@ -109,7 +109,7 @@ export default function Signup() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <Input
-                  className="pl-10"
+                  className="pl-10 h-9 sm:h-10 text-sm sm:text-base"
                   type="password"
                   placeholder="Password"
                   name="password"
@@ -124,17 +124,24 @@ export default function Signup() {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full h-9 sm:h-10 text-sm sm:text-base"
               disabled={loading}
             >
-              {loading ? "Creating Account..." : "Sign Up"}
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Creating Account...</span>
+                </div>
+              ) : (
+                "Sign Up"
+              )}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <div className="text-sm text-light-400">
+        <CardFooter className="flex justify-center px-4 sm:px-6 pb-5 sm:pb-6">
+          <div className="text-xs sm:text-sm text-light-400">
             Already have an account?{" "}
-            <Link to="/login" className="text-primary-400 hover:underline">
+            <Link to="/login" className="text-primary-400 hover:underline font-medium">
               Log in
             </Link>
           </div>
