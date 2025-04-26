@@ -25,7 +25,7 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
 
       if (onDelete) {
         onDelete();
-      } else {
+      } else if (refreshTodos) {
         refreshTodos();
       }
     } catch (err) {

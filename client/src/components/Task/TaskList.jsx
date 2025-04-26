@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { taskApi, todoApi, searchApi } from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
@@ -25,6 +25,23 @@ export default function TaskList() {
   const [searchResults, setSearchResults] = useState(null);
   const searchInputRef = useRef(null);
 
+  // Cache control
+  const tasksCache = useRef({
+    data: null,
+    timestamp: 0,
+    loading: false,
+    todoId: null
+  });
+
+  const todoCache = useRef({
+    data: null,
+    timestamp: 0,
+    loading: false,
+    todoId: null
+  });
+
+  const CACHE_LIFETIME = 30000;
+
   // Ctrl+K or Cmd+K to focus search
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -42,41 +59,85 @@ export default function TaskList() {
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [searchQuery]);
 
-  // Get todo details
-  const getTodoDetails = async () => {
+  // Get todo details with caching
+  const getTodoDetails = useCallback(async (forceRefresh = false) => {
     if (!todoId || !user) return;
+    if (todoCache.current.loading) return;
+
+    const now = Date.now();
+    if (
+      !forceRefresh &&
+      todoCache.current.data &&
+      todoCache.current.todoId === todoId &&
+      now - todoCache.current.timestamp < CACHE_LIFETIME
+    ) {
+      setTodoTitle(todoCache.current.data.title);
+      return;
+    }
 
     try {
+      todoCache.current.loading = true;
+
       const response = await todoApi.getTodo(todoId);
+
+      // Update cache
+      todoCache.current.data = response.data;
+      todoCache.current.timestamp = now;
+      todoCache.current.todoId = todoId;
+
       setTodoTitle(response.data.title);
     } catch (error) {
       toast.error("Failed to load todo details");
+    } finally {
+      todoCache.current.loading = false;
     }
-  };
+  }, [todoId, user]);
 
-  // Get all tasks for a todo
-  const getTasks = async () => {
+  // Get all tasks for a todo with caching
+  const getTasks = useCallback(async (forceRefresh = false) => {
     if (!todoId || !user) return;
+    if (tasksCache.current.loading) return;
+
+    const now = Date.now();
+    if (
+      !forceRefresh &&
+      tasksCache.current.data &&
+      tasksCache.current.todoId === todoId &&
+      now - tasksCache.current.timestamp < CACHE_LIFETIME
+    ) {
+      setTasks(tasksCache.current.data);
+      setFilteredTasks(tasksCache.current.data);
+      return;
+    }
 
     try {
       setLoading(true);
+      tasksCache.current.loading = true;
       setError("");
+
       const response = await taskApi.getTasks(todoId);
+
+      // Update cache
+      tasksCache.current.data = response.data;
+      tasksCache.current.timestamp = now;
+      tasksCache.current.todoId = todoId;
+
       setTasks(response.data);
       setFilteredTasks(response.data);
     } catch (error) {
       toast.error("Failed to load tasks");
     } finally {
       setLoading(false);
+      tasksCache.current.loading = false;
     }
-  };
+  }, [todoId, user]);
 
   useEffect(() => {
     if (user) {
-      getTasks();
       getTodoDetails();
+      getTasks();
     }
-  }, [todoId, user]);
+  }, [todoId, user, getTodoDetails, getTasks]);
 
   // Filter tasks when search query changes
   useEffect(() => {
@@ -178,7 +239,8 @@ export default function TaskList() {
         toast.success("Task created successfully", { id: toastId });
       }
 
-      getTasks();
+      // Force refresh cache after creating/updating task
+      getTasks(true);
       setTask("");
       // Clear search if active
       if (searchQuery) {
@@ -209,13 +271,19 @@ export default function TaskList() {
       await taskApi.deleteTask(todoId, taskId);
       toast.success("Task deleted successfully", { id: toastId });
 
-      getTasks();
+      // Force refresh cache after deleting task
+      getTasks(true);
     } catch (error) {
       toast.error("Failed to delete task");
     } finally {
       setLoading(false);
       setDeletingId(null);
     }
+  };
+
+  // Force refresh function for child components
+  const refreshTasks = () => {
+    getTasks(true);
   };
 
   return (

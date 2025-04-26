@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import TodoList from "./TodoList";
 import { todoApi, searchApi } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -21,6 +21,14 @@ export default function AddTodo() {
   const { user } = useAuth();
   const searchInputRef = useRef(null);
 
+  // Cache control
+  const todosCache = useRef({
+    data: null,
+    timestamp: 0,
+    loading: false
+  });
+  const CACHE_LIFETIME = 30000;
+
   // Ctrl+K or Cmd+K to focus search
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -37,26 +45,47 @@ export default function AddTodo() {
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [searchQuery]);
 
-  // Getting todos
-  const getTodos = async () => {
+  // Getting todos with caching
+  const getTodos = useCallback(async (forceRefresh = false) => {
+    if (todosCache.current.loading) return;
+
+    const now = Date.now();
+    if (
+      !forceRefresh &&
+      todosCache.current.data &&
+      now - todosCache.current.timestamp < CACHE_LIFETIME
+    ) {
+      setTodos(todosCache.current.data);
+      setFilteredTodos(todosCache.current.data);
+      return;
+    }
+
     try {
       setLoading(true);
+      todosCache.current.loading = true;
       setError('');
+
       const response = await todoApi.getAllTodos();
+
+      // Update cache
+      todosCache.current.data = response.data;
+      todosCache.current.timestamp = now;
+
       setTodos(response.data);
       setFilteredTodos(response.data);
     } catch (error) {
       toast.error('Failed to load todos');
     } finally {
       setLoading(false);
+      todosCache.current.loading = false;
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (user) {
       getTodos();
     }
-  }, [user]);
+  }, [user, getTodos]);
 
   // Filter todos when search query changes
   useEffect(() => {
@@ -94,12 +123,11 @@ export default function AddTodo() {
           description: ''
         });
         toast.success('Todo created successfully', { id: toastId });
-        getTodos();
+        getTodos(true);
       } else {
-        // Update existing todo
         await todoApi.updateTodo(editTodo.id, { title: todo });
         toast.info('Todo updated successfully', { id: toastId });
-        getTodos();
+        getTodos(true);
         setEditTodo(null);
       }
       setTodo("");
@@ -159,6 +187,10 @@ export default function AddTodo() {
   const handleEditMode = (todoItem) => {
     setEditTodo(todoItem);
     setTodo(todoItem.title);
+  };
+
+  const refreshTodos = () => {
+    getTodos(true);
   };
 
   return (
@@ -259,7 +291,7 @@ export default function AddTodo() {
         loading={loading || searchLoading}
         onEdit={handleEditMode}
         onDelete={getTodos}
-        refreshTodos={getTodos}
+        refreshTodos={refreshTodos}
         searchQuery={searchQuery}
         searchResults={searchResults}
       />
