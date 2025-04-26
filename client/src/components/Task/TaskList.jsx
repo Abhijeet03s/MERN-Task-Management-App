@@ -18,6 +18,7 @@ export default function TaskList() {
   const [task, setTask] = useState("");
   const [editTaskId, setEditTaskId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState("");
   const [todoTitle, setTodoTitle] = useState("");
@@ -264,7 +265,7 @@ export default function TaskList() {
   const deleteTaskHandler = async (taskId) => {
     try {
       setDeletingId(taskId);
-      setLoading(true);
+      setDeleteLoading(true);
       setError("");
 
       const toastId = toast.loading("Deleting task...");
@@ -286,7 +287,7 @@ export default function TaskList() {
     } catch (error) {
       toast.error("Failed to delete task");
     } finally {
-      setLoading(false);
+      setDeleteLoading(false);
       setDeletingId(null);
     }
   };
@@ -294,6 +295,37 @@ export default function TaskList() {
   // Force refresh function for child components
   const refreshTasks = () => {
     getTasks(true);
+  };
+
+  // Handle task completion toggle
+  const handleCompleteTask = async (task) => {
+    try {
+      setLoading(true);
+      const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+
+      const response = await taskApi.updateTask(todoId, {
+        taskId: task.id,
+        status: newStatus
+      });
+
+      // Update local state with the updated task
+      const updatedTask = response.data.task;
+
+      if (updatedTask) {
+        const updateTasks = (prevTasks) =>
+          prevTasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+
+        setTasks(updateTasks);
+        setFilteredTasks(updateTasks);
+        setLocalTasks(updateTasks);
+      }
+
+      toast.success(`Task marked as ${newStatus}`);
+    } catch (error) {
+      toast.error("Failed to update task status");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Keep localTasks in sync with tasks
@@ -307,24 +339,24 @@ export default function TaskList() {
     : filteredTasks;
 
   return (
-    <div className="container mx-auto px-4 max-w-3xl py-10">
-      <Link to="/" className="inline-flex items-center text-primary-400 hover:text-primary-500 mb-6">
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to todos
-      </Link>
+    <div className="container mx-auto px-4 max-w-3xl py-6 md:py-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+        <div className="flex items-center gap-2">
+          <Link to="/" className="text-light-500 hover:text-primary-400 transition-colors">
+            <Button variant="ghost" size="sm" className="gap-1">
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+          </Link>
+          <h1 className="text-xl md:text-2xl font-bold gradient-text">{todoTitle}</h1>
+        </div>
+      </div>
 
-      <Card hover className="mb-6 overflow-hidden">
-        <CardHeader className="pb-0 pt-6">
-          <div className="flex items-center justify-between">
-            <CardTitle className={`${editTaskId ? 'text-primary-400' : 'gradient-text'}`}>
-              {todoTitle ? `Tasks for: ${todoTitle}` : 'Add Tasks'}
-            </CardTitle>
-            <span className="text-sm font-medium px-2.5 py-1 rounded-full bg-primary-500/10 text-primary-400">
-              {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}
-            </span>
-          </div>
+      <Card className="mb-6 overflow-hidden">
+        <CardHeader className="pb-0 pt-4 md:pt-6">
+          <CardTitle>Create New Task</CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-4 md:pt-6">
           {error && (
             <div className="mb-4 p-3 bg-accent-red/10 border-l-4 border-accent-red rounded-r-lg text-light-100 animate-pulse-slow">
               {error}
@@ -332,168 +364,174 @@ export default function TaskList() {
           )}
 
           <form onSubmit={createTask} className="space-y-4">
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
               <Input
-                name="task"
-                id="task"
-                type="text"
-                placeholder={editTaskId ? "Update your task..." : "Enter your task..."}
+                name="title"
+                id="title"
                 value={task}
                 onChange={(e) => setTask(e.target.value)}
+                placeholder="Add a new task"
+                className="flex-1 text-sm sm:text-base h-9 sm:h-10"
+                autoComplete="off"
                 disabled={loading}
-                className="flex-1 h-12 text-base"
               />
               <Button
                 type="submit"
+                className="whitespace-nowrap text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 w-full sm:w-auto"
                 disabled={loading}
-                size="lg"
-                className="rounded-lg"
               >
-                <PlusCircle className="w-5 h-5 mr-2" />
-                {editTaskId ? 'Update' : 'Add'}
+                {loading ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-light-100 border-t-transparent rounded-full animate-spin" />
+                    <span>{editTaskId ? 'Updating...' : 'Creating...'}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{editTaskId ? 'Update' : 'Add'}</span>
+                  </div>
+                )}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
 
-      {/* Search Bar */}
-      <div className="relative mb-4">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-          <Search className="h-4 w-4" />
-        </div>
-        <Input
-          ref={searchInputRef}
-          placeholder="Search tasks... (Ctrl+K)"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 pr-10 h-12 bg-dark-400/50 rounded-lg border-dark-100/40 focus:border-primary-500"
-        />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {searchLoading && (
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-500 border-t-transparent"></div>
-          )}
-          {searchQuery ? (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="text-gray-500 hover:text-light-100 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          ) : (
-            <kbd className="hidden sm:flex items-center justify-center h-5 w-7 text-[10px] font-medium text-gray-500 bg-dark-100/50 border border-dark-100/30 rounded transition-colors hover:bg-dark-100/70 hover:text-gray-400">
-              {navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}
-            </kbd>
-          )}
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-3 gap-3">
+        <h2 className="text-base sm:text-xl font-semibold gradient-text truncate w-full sm:w-auto text-center sm:text-left">
+          {searchResults ? `Search: "${searchResults.query}"` : 'Your Tasks'}
+        </h2>
+
+        <div className="relative w-full sm:max-w-[240px]">
+          <div className="flex items-center">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+                <Search className="h-3 w-3 sm:h-4 sm:w-4 text-light-500/50" />
+              </div>
+              <Input
+                placeholder="Search... (Ctrl+K)"
+                className="pl-7 sm:pl-9 pr-6 sm:pr-8 text-xs sm:text-sm h-8 sm:h-9 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                ref={searchInputRef}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-2.5"
+                >
+                  <X className="h-3 w-3 sm:h-4 sm:w-4 text-light-500/70 hover:text-light-100" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Search Results Info */}
-      {searchQuery && (
-        <div className="mb-4 flex items-center justify-between">
-          <div className="text-light-100">
-            <span className="font-medium">
-              {searchResults ? 'Search Results' : 'Filtered Tasks'}
-            </span>
-            {searchResults && (
-              <span className="ml-2 text-sm text-light-500">
-                for "{searchResults.query}"
-              </span>
-            )}
-          </div>
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearSearch}
-              className="text-light-500 hover:text-light-100"
-            >
-              Clear
-            </Button>
-          )}
-        </div>
-      )}
-
-      <Card hover>
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
+      <Card hover className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between py-4">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-primary-400" />
-            <h2 className="text-xl font-semibold text-light-100">
-              {searchQuery ? 'Task Results' : 'Task List'}
-            </h2>
+            <ListChecks className="w-5 h-5 text-primary-400" />
+            <CardTitle>
+              {searchQuery ? 'Search Results' : 'Task List'}
+            </CardTitle>
           </div>
+          {!loading && filteredTasks.length > 0 && (
+            <span className="text-sm font-medium px-2.5 py-1 rounded-md bg-primary-500/10 text-primary-400">
+              {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}
+            </span>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {!loading && displayTasks && displayTasks.length > 0 ? (
-              displayTasks.map((task) => (
+          {loading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 p-4 rounded-lg bg-dark-350 animate-pulse"
+                >
+                  <div className="h-5 w-5 rounded-full bg-dark-300"></div>
+                  <div className="flex-1 h-4 bg-dark-300 rounded"></div>
+                  <div className="h-8 w-16 bg-dark-300 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : filteredTasks.length > 0 ? (
+            <div className="space-y-3">
+              {filteredTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="group relative flex items-center gap-3 p-4 rounded-lg bg-dark-350 hover:bg-dark-400 border border-dark-100/10 hover:border-primary-500/20 transition-all duration-200"
+                  className={`group relative flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border transition-all duration-200 ${task.status === 'completed'
+                    ? 'bg-green-500/5 border-green-500/10'
+                    : 'bg-dark-350 hover:bg-dark-400 border-dark-100/10 hover:border-primary-500/20'
+                    }`}
                 >
-                  <div className="flex-1">
-                    <span className="font-medium text-light-100">{task.title}</span>
-                    {task.description && searchResults && (
-                      <p className="text-sm text-light-500 mt-1 line-clamp-1">{task.description}</p>
-                    )}
-                    {searchResults && task.status && (
-                      <div className="mt-1">
-                        <span className={`text-xs px-1.5 py-0.5 rounded inline-block ${task.status === 'completed'
-                          ? 'bg-green-500/10 text-green-400'
-                          : 'bg-amber-500/10 text-amber-400'
-                          }`}>
-                          {task.status}
-                        </span>
-                      </div>
-                    )}
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <button
+                      onClick={() => handleCompleteTask(task)}
+                      className={`flex-shrink-0 h-4 w-4 sm:h-5 sm:w-5 rounded-full transition-colors duration-200 flex items-center justify-center ${task.status === 'completed'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-dark-100 hover:bg-primary-500/20'
+                        }`}
+                    >
+                      {task.status === 'completed' && <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />}
+                    </button>
+                    <span className={`flex-1 truncate text-sm sm:text-base ${task.status === 'completed' ? 'line-through text-light-500' : 'text-light-100'
+                      }`}>
+                      {task.title}
+                    </span>
                   </div>
 
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditTask(task)}
-                      disabled={loading}
-                      className="h-8 w-8 text-primary-400"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                  <div className="flex gap-1 flex-shrink-0">
+                    {task.status !== 'completed' && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditTask(task)}
+                        disabled={deleteLoading}
+                        className="h-7 w-7 sm:h-8 sm:w-8 text-primary-400"
+                      >
+                        <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteTaskHandler(task.id)}
-                      disabled={loading}
-                      className="h-8 w-8 text-accent-red"
+                      disabled={deleteLoading}
+                      className="h-7 w-7 sm:h-8 sm:w-8 text-accent-red"
                     >
                       {deletingId === task.id ? (
-                        <span className="h-4 w-4 border-2 border-accent-red border-t-transparent rounded-full animate-spin" />
+                        <span className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-accent-red border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       )}
                     </Button>
                   </div>
-                </div>
-              ))
-            ) : (
-              !loading && (
-                <div className="flex flex-col items-center justify-center py-12 text-light-500/60">
-                  <ListChecks className="h-12 w-12 mb-3 opacity-20" />
-                  {searchQuery ? (
-                    <>
-                      <p className="text-center text-lg">No tasks match your search</p>
-                      <p className="text-center text-sm">Try a different search term</p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-center text-lg">No tasks found</p>
-                      <p className="text-center text-sm">Add a task above to get started</p>
-                    </>
+
+                  {task.status !== 'completed' && (
+                    <span className="absolute -left-0.5 top-0 bottom-0 w-0.5 bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"></span>
                   )}
                 </div>
-              )
-            )}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-light-500/60">
+              <ListChecks className="h-12 w-12 mb-3 opacity-20" />
+              {searchQuery ? (
+                <>
+                  <p className="text-center text-lg">No tasks match your search</p>
+                  <p className="text-center text-sm mt-1">Try a different search term</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-center text-lg">No tasks yet</p>
+                  <p className="text-center text-sm mt-1">Create one to get started</p>
+                </>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

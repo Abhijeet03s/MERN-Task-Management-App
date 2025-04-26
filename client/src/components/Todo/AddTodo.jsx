@@ -229,14 +229,14 @@ export default function AddTodo() {
   };
 
   return (
-    <div className="container mx-auto px-4 max-w-3xl py-10">
+    <div className="container mx-auto px-4 max-w-3xl py-6 md:py-10">
       <Card hover className="mb-6 overflow-hidden">
-        <CardHeader className="pb-0 pt-6">
+        <CardHeader className="pb-0 pt-4 md:pt-6">
           <CardTitle className={`${editTodo ? 'text-primary-400' : 'gradient-text'}`}>
             {editTodo ? 'Edit Todo' : 'Create New Todo'}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-4 md:pt-6">
           {error && (
             <div className="mb-4 p-3 bg-accent-red/10 border-l-4 border-accent-red rounded-r-lg text-light-100 animate-pulse-slow">
               {error}
@@ -244,88 +244,75 @@ export default function AddTodo() {
           )}
 
           <form onSubmit={createTodo} className="space-y-4">
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
               <Input
                 name="title"
                 id="title"
-                type="text"
-                placeholder={editTodo ? "Update your todo..." : "Enter your todo..."}
                 value={todo}
                 onChange={(e) => setTodo(e.target.value)}
+                placeholder="What needs to be done?"
+                className="flex-1 text-sm sm:text-base h-9 sm:h-10"
+                autoComplete="off"
                 disabled={loading}
-                className="flex-1 h-12 text-base"
               />
               <Button
                 type="submit"
+                className="whitespace-nowrap text-xs sm:text-sm h-9 sm:h-10 px-3 sm:px-4 w-full sm:w-auto"
                 disabled={loading}
-                size="lg"
-                className="rounded-lg"
               >
-                <PlusCircle className="w-5 h-5 mr-2" />
-                {editTodo ? 'Update' : 'Add'}
+                {loading ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-light-100 border-t-transparent rounded-full animate-spin" />
+                    <span>{editTodo ? 'Updating...' : 'Creating...'}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{editTodo ? 'Update' : 'Add'}</span>
+                  </div>
+                )}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
 
-      {/* Search Bar */}
-      <div className="relative mb-4">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-          <Search className="h-4 w-4" />
-        </div>
-        <Input
-          ref={searchInputRef}
-          placeholder="Search todos... (Ctrl+K)"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 pr-10 h-12 bg-dark-400/50 rounded-lg border-dark-100/40 focus:border-primary-500"
-        />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {searchLoading && (
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-500 border-t-transparent"></div>
-          )}
-          {searchQuery ? (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="text-gray-500 hover:text-light-100 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          ) : (
-            <kbd className="hidden sm:flex items-center justify-center h-5 w-7 text-[10px] font-medium text-gray-500 bg-dark-100/50 border border-dark-100/30 rounded transition-colors hover:bg-dark-100/70 hover:text-gray-400">
-              {navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}
-            </kbd>
-          )}
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-3 gap-3">
+        <h2 className="text-base sm:text-xl font-semibold gradient-text truncate w-full sm:w-auto text-center sm:text-left">
+          {searchResults ? `Search: "${searchResults.query}"` : 'Your Todos'}
+        </h2>
+
+        <div className="relative w-full sm:max-w-[240px]">
+          <div className="flex items-center">
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none">
+                <Search className="h-3 w-3 sm:h-4 sm:w-4 text-light-500/50" />
+              </div>
+              <Input
+                placeholder="Search... (Ctrl+K)"
+                className="pl-7 sm:pl-9 pr-6 sm:pr-8 text-xs sm:text-sm h-8 sm:h-9 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                ref={searchInputRef}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute inset-y-0 right-0 flex items-center pr-2 sm:pr-2.5"
+                >
+                  <X className="h-3 w-3 sm:h-4 sm:w-4 text-light-500/70 hover:text-light-100" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Search Results Info */}
-      {searchResults && (
-        <div className="mb-4 flex items-center justify-between">
-          <div className="text-light-100">
-            <span className="font-medium">Search Results</span>
-            <span className="ml-2 text-sm text-light-500">
-              {searchResults.total} results for "{searchResults.query}"
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearSearch}
-            className="text-light-500 hover:text-light-100"
-          >
-            Clear
-          </Button>
-        </div>
-      )}
-
       <TodoList
         todos={filteredTodos}
-        loading={loading || searchLoading}
+        loading={loading}
         onEdit={handleEditMode}
-        onDelete={getTodos}
         refreshTodos={refreshTodos}
         searchQuery={searchQuery}
         searchResults={searchResults}

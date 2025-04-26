@@ -97,37 +97,43 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
               displayTodos.map((todo) => (
                 <div
                   key={todo.id}
-                  className="group relative flex items-center gap-3 p-4 rounded-lg bg-dark-350 hover:bg-dark-400 border border-dark-100/10 hover:border-primary-500/20 transition-all duration-200"
+                  className="group relative flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-dark-350 hover:bg-dark-400 border border-dark-100/10 hover:border-primary-500/20 transition-all duration-200"
                 >
                   <div
                     onClick={() => navigate(`/${todo.id}`)}
-                    className="flex-1 cursor-pointer group-hover:text-primary-400 transition-colors flex items-center"
+                    className="flex-1 min-w-0 cursor-pointer group-hover:text-primary-400 transition-colors flex items-center"
                   >
-                    <span className="font-medium">{todo.title}</span>
-                    <ChevronRight className="ml-1.5 h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="font-medium text-sm sm:text-base truncate">{todo.title}</span>
+                    <ChevronRight className="ml-1 sm:ml-1.5 h-3 w-3 sm:h-4 sm:w-4 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                   </div>
 
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => onEdit(todo)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(todo);
+                      }}
                       disabled={deleteLoading}
-                      className="h-8 w-8 text-primary-400"
+                      className="h-7 w-7 sm:h-8 sm:w-8 text-primary-400"
                     >
-                      <Pencil className="h-4 w-4" />
+                      <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => deleteTodoHandler(todo.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteTodoHandler(todo.id);
+                      }}
                       disabled={deleteLoading}
-                      className="h-8 w-8 text-accent-red"
+                      className="h-7 w-7 sm:h-8 sm:w-8 text-accent-red"
                     >
                       {deletingId === todo.id ? (
-                        <span className="h-4 w-4 border-2 border-accent-red border-t-transparent rounded-full animate-spin" />
+                        <span className="h-3 w-3 sm:h-4 sm:w-4 border-2 border-accent-red border-t-transparent rounded-full animate-spin" />
                       ) : (
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       )}
                     </Button>
                   </div>
@@ -141,12 +147,12 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
                 {searchQuery ? (
                   <>
                     <p className="text-center text-lg">No todos match your search</p>
-                    <p className="text-center text-sm">Try a different search term</p>
+                    <p className="text-center text-sm mt-1">Try a different search term</p>
                   </>
                 ) : (
                   <>
                     <p className="text-center text-lg">No todos found</p>
-                    <p className="text-center text-sm">Create one above to get started</p>
+                    <p className="text-center text-sm mt-1">Create one above to get started</p>
                   </>
                 )}
               </div>
@@ -172,21 +178,21 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
               {searchResults.tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="group relative flex items-center gap-3 p-4 rounded-lg bg-dark-350 hover:bg-dark-400 border border-dark-100/10 hover:border-primary-500/20 transition-all duration-200"
+                  className="group relative flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg bg-dark-350 hover:bg-dark-400 border border-dark-100/10 hover:border-primary-500/20 transition-all duration-200"
                 >
                   <div
                     onClick={() => navigate(`/${task.todo_id}`)}
-                    className="flex-1 cursor-pointer group-hover:text-primary-400 transition-colors"
+                    className="flex-1 min-w-0 cursor-pointer group-hover:text-primary-400 transition-colors"
                   >
                     <div className="flex items-center">
-                      <span className="font-medium">{task.title}</span>
-                      <ChevronRight className="ml-1.5 h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="font-medium text-sm sm:text-base truncate">{task.title}</span>
+                      <ChevronRight className="ml-1 sm:ml-1.5 h-3 w-3 sm:h-4 sm:w-4 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs px-1.5 py-0.5 bg-primary-500/10 rounded text-primary-400">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                      <span className="text-2xs sm:text-xs px-1 sm:px-1.5 py-0.5 bg-primary-500/10 rounded text-primary-400 truncate max-w-[100px] sm:max-w-none">
                         {task.todo_title || "Unknown Todo"}
                       </span>
-                      <span className={`text-xs px-1.5 py-0.5 rounded ${task.status === 'completed'
+                      <span className={`text-2xs sm:text-xs px-1 sm:px-1.5 py-0.5 rounded ${task.status === 'completed'
                         ? 'bg-green-500/10 text-green-400'
                         : 'bg-amber-500/10 text-amber-400'
                         }`}>

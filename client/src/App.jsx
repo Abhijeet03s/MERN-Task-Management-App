@@ -10,14 +10,16 @@ export default function App() {
   return (
     <>
       <AuthContextProvider>
-        <div>
+        <div className="flex flex-col min-h-screen">
           <Navbar />
-          <Routes>
-            <Route path="/" element={<AddTodo />}></Route>
-            <Route path="/:todoId" element={<TaskList />}></Route>
-            <Route path="/signup" element={<Signup />}></Route>
-            <Route path="/login" element={<Login />}></Route>
-          </Routes>
+          <main className="flex-1">
+            <Routes>
+              <Route path="/" element={<AddTodo />}></Route>
+              <Route path="/:todoId" element={<TaskList />}></Route>
+              <Route path="/signup" element={<Signup />}></Route>
+              <Route path="/login" element={<Login />}></Route>
+            </Routes>
+          </main>
         </div>
       </AuthContextProvider>
     </>

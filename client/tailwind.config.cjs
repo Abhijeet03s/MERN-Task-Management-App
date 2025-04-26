@@ -2,6 +2,9 @@ module.exports = {
   content: ["./src/**/*.{js,jsx}"],
   theme: {
     extend: {
+      fontSize: {
+        '2xs': '0.625rem',
+      },
       colors: {
         primary: {
           50: '#eef2ff',
