@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Trash2, Pencil, ChevronRight, ListChecks, Search } from "lucide-react";
 import { todoApi } from "../../services/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
@@ -11,6 +11,15 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState('');
+  const [localTodos, setLocalTodos] = useState([]);
+
+  // Keep localTodos in sync with passed todos
+  useEffect(() => {
+    setLocalTodos(todos || []);
+  }, [todos]);
+
+  // Display either passed todos or localTodos (after deletion)
+  const displayTodos = localTodos.length !== todos.length ? localTodos : todos;
 
   // Delete todo
   const deleteTodoHandler = async (todoId) => {
@@ -21,8 +30,13 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
       const toastId = toast.loading('Deleting todo...');
 
       await todoApi.deleteTodo(todoId);
+
+      // Immediately update local state to remove the deleted todo
+      setLocalTodos(prevTodos => prevTodos.filter(todo => todo.id !== todoId));
+
       toast.success('Todo deleted successfully', { id: toastId });
 
+      // Still call the parent's refresh/delete handlers for cache invalidation
       if (onDelete) {
         onDelete();
       } else if (refreshTodos) {
@@ -65,9 +79,9 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
               {searchQuery && !searchResults ? 'Filtered Todos' : (searchResults ? 'Todo Results' : 'Todo List')}
             </CardTitle>
           </div>
-          {todos?.length > 0 && (
+          {displayTodos?.length > 0 && (
             <span className="text-sm font-medium px-2.5 py-1 rounded-md bg-primary-500/10 text-primary-400">
-              {todos.length} todo{todos.length !== 1 ? 's' : ''}
+              {displayTodos.length} todo{displayTodos.length !== 1 ? 's' : ''}
             </span>
           )}
         </CardHeader>
@@ -79,8 +93,8 @@ export default function TodoList({ todos, loading, onEdit, onDelete, refreshTodo
           )}
 
           <div className="space-y-3">
-            {todos && todos.length > 0 ? (
-              todos.map((todo) => (
+            {displayTodos && displayTodos.length > 0 ? (
+              displayTodos.map((todo) => (
                 <div
                   key={todo.id}
                   className="group relative flex items-center gap-3 p-4 rounded-lg bg-dark-350 hover:bg-dark-400 border border-dark-100/10 hover:border-primary-500/20 transition-all duration-200"

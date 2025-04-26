@@ -14,6 +14,7 @@ export default function TaskList() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
+  const [localTasks, setLocalTasks] = useState([]);
   const [task, setTask] = useState("");
   const [editTaskId, setEditTaskId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -269,9 +270,18 @@ export default function TaskList() {
       const toastId = toast.loading("Deleting task...");
 
       await taskApi.deleteTask(todoId, taskId);
+
+      // Immediately update local state to remove the deleted task
+      setLocalTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+
+      // If we're filtering or searching, also update the filtered list
+      if (searchQuery || searchResults) {
+        setFilteredTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+      }
+
       toast.success("Task deleted successfully", { id: toastId });
 
-      // Force refresh cache after deleting task
+      // Still trigger cache refresh in the background
       getTasks(true);
     } catch (error) {
       toast.error("Failed to delete task");
@@ -285,6 +295,16 @@ export default function TaskList() {
   const refreshTasks = () => {
     getTasks(true);
   };
+
+  // Keep localTasks in sync with tasks
+  useEffect(() => {
+    setLocalTasks(tasks);
+  }, [tasks]);
+
+  // Use localTasks for displaying if it differs from filteredTasks (after deletion)
+  const displayTasks = localTasks.length !== filteredTasks.length && !searchQuery
+    ? localTasks
+    : filteredTasks;
 
   return (
     <div className="container mx-auto px-4 max-w-3xl py-10">
@@ -406,8 +426,8 @@ export default function TaskList() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {!loading && filteredTasks && filteredTasks.length > 0 ? (
-              filteredTasks.map((task) => (
+            {!loading && displayTasks && displayTasks.length > 0 ? (
+              displayTasks.map((task) => (
                 <div
                   key={task.id}
                   className="group relative flex items-center gap-3 p-4 rounded-lg bg-dark-350 hover:bg-dark-400 border border-dark-100/10 hover:border-primary-500/20 transition-all duration-200"

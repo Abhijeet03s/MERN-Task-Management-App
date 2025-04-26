@@ -118,19 +118,54 @@ export default function AddTodo() {
     try {
       if (!editTodo) {
         // Create new todo
-        await todoApi.createTodo({
+        const response = await todoApi.createTodo({
           title: todo,
           description: ''
         });
+
+        // Update local state with the new todo
+        const newTodo = response.data;
+        if (newTodo) {
+          // Add new todo to the state and cache
+          setTodos(prevTodos => [newTodo, ...prevTodos]);
+          setFilteredTodos(prevTodos => [newTodo, ...prevTodos]);
+
+          // Update cache
+          todosCache.current.data = [newTodo, ...(todosCache.current.data || [])];
+          todosCache.current.timestamp = Date.now();
+        }
+
         toast.success('Todo created successfully', { id: toastId });
-        getTodos(true);
       } else {
-        await todoApi.updateTodo(editTodo.id, { title: todo });
+        // Update existing todo
+        const response = await todoApi.updateTodo(editTodo.id, { title: todo });
+        const updatedTodo = response.data.todo;
+
+        // Update local state with the updated todo
+        if (updatedTodo) {
+          const updateTodos = (prevTodos) =>
+            prevTodos.map(t => t.id === updatedTodo.id ? updatedTodo : t);
+
+          setTodos(updateTodos);
+          setFilteredTodos(updateTodos);
+
+          // Update cache
+          if (todosCache.current.data) {
+            todosCache.current.data = todosCache.current.data.map(t =>
+              t.id === updatedTodo.id ? updatedTodo : t
+            );
+            todosCache.current.timestamp = Date.now();
+          }
+        }
+
         toast.info('Todo updated successfully', { id: toastId });
-        getTodos(true);
         setEditTodo(null);
       }
+
       setTodo("");
+
+      // Still refresh todos in the background to ensure everything is in sync
+      getTodos(true);
     } catch (error) {
       toast.error(error.response?.data?.message || 'An error occurred', { id: toastId });
     } finally {
