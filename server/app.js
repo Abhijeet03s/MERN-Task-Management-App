@@ -11,7 +11,7 @@ app.use(
     origin: [
       'https://task-manager.abhijeetsh.com',
       'https://task-manager-abhijeetsh.pages.dev',
-      'https://mern-task-management-app-fuge.vercel.app',
+      'https://mern-task-management-app-szno.vercel.app',
       'http://localhost:5173'
     ],
     credentials: true
