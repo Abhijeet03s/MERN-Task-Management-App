@@ -9,6 +9,7 @@ const searchRoute = require("./routes/searchRoute");
 app.use(
   cors({
     origin: [
+      'https://task-manager.abhijeetsh.com',
       'https://mern-task-management-app-szno.vercel.app',
       'http://localhost:5173'
     ],
